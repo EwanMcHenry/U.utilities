@@ -1,0 +1,639 @@
+
+# general utilities ----
+## find limits ----
+
+#' Find Limits for Variable Scaling
+#'
+#' This function computes an upper limit for scaling variables for display purposes, useful for squishing variable scales to a specified quantile or standard deviation.
+#' The limit is determined as the minimum of two values: a mean plus a multiple of standard deviation or a weighted quantile.
+#'
+#' @param var Numeric vector. The variable for which limits are being calculated.
+#' @param quant.weights Numeric vector. Weights for each observation in `var`, used for calculating the weighted quantile. Default is equal weights.
+#' @param consider Logical vector. Indicator of which elements in `var` should be considered. Default is all elements.
+#' @param quant.prob Numeric. Probability for the quantile calculation. Default is 0.98.
+#' @param sd.mult Numeric. Multiple of the standard deviation to add to the mean. Default is 3.
+#'
+#' @return Numeric. The upper limit for the variable scaling.
+#'
+#' @examplesIf requireNamespace("Hmisc", quietly = TRUE)
+#' var <- rnorm(100)
+#' find.lims(var)
+#' @import Hmisc
+#' @importFrom Hmisc wtd.quantile
+#' @export
+find.lims <- function(var, quant.weights = rep(1, length(var)), consider = rep(TRUE, length(var)), quant.prob = 0.98, sd.mult = 3) {
+  # Ensure 'quant.weights' and 'consider' are numeric and logical respectively
+  quant.weights <- as.numeric(quant.weights)
+  consider <- as.logical(consider)
+
+
+  # Calculate mean plus a multiple of standard deviation
+  mean_limit <- mean(var[consider], na.rm = TRUE) + sd.mult * sd(var[consider], na.rm = TRUE)
+
+  # Calculate weighted quantile
+  quantile_limit <- Hmisc::wtd.quantile(x = var[consider], probs = quant.prob, weights = quant.weights[consider], na.rm = TRUE)
+
+  # Return the minimum of the two limits
+  min(mean_limit, quantile_limit)
+}
+
+## pad.lim ----
+#' Pad Range of Numeric Vector with Percentage Padding
+#'
+#' This function pads the range of a numeric vector by a specified percentage. The padding is added to both the minimum and maximum values of the vector.
+#'
+#' @param x Numeric vector. The data for which the range is to be padded.
+#' @param map.pad Numeric. The percentage of the range to add as padding to both ends. Default is 0.05 (5%).
+#'
+#' @return Numeric vector of length 2. The padded range, with the specified percentage added to both ends.
+#'
+#' @examples
+#' pad.lim(c(10, 15, 20, 25))
+#' pad.lim(c(50, 60, 70, 80), map.pad = 0.1)
+#'
+#' @export
+pad.lim <- function(x, map.pad = 0.05) {
+  if (!is.numeric(x) || length(x) < 2) {
+    stop("'x' must be a numeric vector with at least two elements.")
+  }
+
+  range_diff <- diff(range(x, na.rm = TRUE))         # Calculate the difference between max and min
+  c(min(x, na.rm = T) - range_diff * map.pad, max(x, na.rm = T) + range_diff * map.pad)
+}
+
+
+# keep.only.letters ----
+
+#' Remove Non-Alphabetic Characters
+#'
+#' This function removes all non-alphabetic characters from a string, leaving only letters (both uppercase and lowercase).
+#'
+#' @param x Character vector. The input string(s) from which non-alphabetic characters will be removed.
+#'
+#' @return Character vector. The input string(s) with all non-alphabetic characters removed.
+#'
+#' @examplesIf requireNamespace("stringr", quietly = TRUE)
+#' keep.only.letters("Hello, World! 123") # Returns "HelloWorld"
+#' keep.only.letters(c("Test!@#123", "Another $tring!!")) # Returns c("Test", "Anothertring")
+#'
+#' @importFrom stringr str_replace_all regex
+#' @export
+keep.only.letters <- function(x) {
+  if (!is.character(x)) {
+    stop("'x' must be a character vector.")
+  }
+  stringr::str_replace_all(x, stringr::regex("[^a-zA-Z]"), "")
+}
+
+
+
+# PLoting utilities ----
+
+## theme map ----
+
+#' Custom ggplot2 Map Theme
+#'
+#' This function provides a customized `ggplot2` theme designed for map visualizations.
+#' It includes options to control the inclusion of titles and subtitles, and allows
+#' customization of legend size and position.
+#'
+#' @param leg.tit.size Numeric. Size of the legend title text. Default is 8.
+#' @param legend.position Character or numeric vector. Position of the legend.
+#'   Can be one of "none", "left", "right", "bottom", "top", or a numeric vector
+#'   of length two. Default is "bottom".
+#' @param include.title Logical. If `TRUE`, includes plot title and subtitle with
+#'   the default text size. If `FALSE`, both title and subtitle are removed. Default is `TRUE`.
+#' @param ... Additional arguments passed to `ggplot2::theme()`.
+#'
+#' @return A ggplot2 `theme` object.
+#'
+#' @examples
+#' if (requireNamespace("ggplot2", quietly = TRUE)) {
+#'   ggplot2::ggplot(ggplot2::mpg, ggplot2::aes(x = displ, y = hwy)) +
+#'     ggplot2::geom_point() +
+#'     theme_map(leg.tit.size = 10, legend.position = "right", include.title = FALSE)
+#' }
+#'
+#' @import ggplot2
+#' @export
+theme_map <- function(leg.tit.size = 8,
+                      legend.position = "bottom",
+                      include.title = TRUE,
+                      ...) {
+
+  ggplot2::theme_minimal() +
+    ggplot2::theme(
+      text = ggplot2::element_text(family = "sans", color = "#22211d"),
+      axis.line = ggplot2::element_blank(),
+      axis.text.x = ggplot2::element_blank(),
+      axis.text.y = ggplot2::element_blank(),
+      axis.ticks = ggplot2::element_blank(),
+      axis.title.x = ggplot2::element_blank(),
+      axis.title.y = ggplot2::element_blank(),
+      plot.title = if (include.title) ggplot2::element_text(size = 11, hjust = 0.5) else ggplot2::element_blank(),
+      plot.subtitle = if (include.title) ggplot2::element_text(size = 8, hjust = 0.5) else ggplot2::element_blank(),
+      legend.title = ggplot2::element_text(size = leg.tit.size),
+      panel.grid.major = ggplot2::element_line(color = "transparent", size = 0.2),
+      panel.grid.minor = ggplot2::element_blank(),
+      plot.background = ggplot2::element_rect(fill = "transparent", color = NA),
+      panel.background = ggplot2::element_rect(fill = "transparent", color = NA),
+      legend.background = ggplot2::element_rect(fill = "transparent", color = NA),
+      legend.position = legend.position,
+      panel.border = ggplot2::element_blank(),
+      ...
+    )
+}
+
+
+
+
+## colour.brks ----
+
+#' Generate Color Breaks
+#'
+#' This function generates a sequence of evenly spaced numeric breaks within the specified limits.
+#'
+#' @param lims Numeric vector of length 2. Specifies the minimum and maximum limits for the breaks.
+#' @param n Integer. The number of breaks to generate. Default is 5.
+#'
+#' @return A numeric vector of breaks.
+#'
+#' @examples
+#' lims <- c(1, 10)
+#' colour.brks(lims, n = 5)
+#'
+#' @export
+colour.brks <- function(lims, n = 5) {
+  seq(from = lims[1], to = lims[2], length.out = n)
+}
+
+## colour.lable ----
+
+#' Generate Labeled Color Breaks
+#'
+#' This function generates labeled breaks for color scales based on provided limits.
+#' It supports appending a "+" symbol to the highest break if the data exceeds the specified limits.
+#'
+#' @param x Numeric vector. The data to be used for determining if the "+" symbol should be added to the highest break.
+#' @param lims Numeric vector of length 2. Specifies the minimum and maximum limits for the breaks.
+#' @param n Integer. The number of breaks to generate. Default is 5.
+#' @param dividor Numeric. A value by which to divide the breaks for labeling. Default is 1.
+#'
+#' @return A character vector of labels for the breaks, with the highest value possibly having a "+" symbol if `max(x)` exceeds `max(lims)`.
+#'
+#' @examples
+#' x <- c(1, 2, 3, 4, 5, 6, 7)
+#' lims <- c(1, 5)
+#' colour.lable(x, lims, n = 5, dividor = 1)
+#'
+#' # Example where max(x) exceeds max(lims)
+#' x <- c(1, 2, 3, 4, 5, 6, 10)
+#' colour.lable(x, lims, n = 5, dividor = 1)
+#'
+#' @export
+colour.lable <- function(x, lims, n = 5, dividor = 1) {
+  breaks <- colour.brks(lims, n = n)
+  if (max(lims, na.rm = TRUE) < max(x, na.rm = TRUE)) {
+    paste(breaks / dividor, c(rep("", times = length(breaks) - 1), "+"))
+  } else {
+    paste(breaks)
+  }
+}
+
+
+## map plotter ----
+
+#' Custom Map Plotter with ggplot2
+#'
+#' This function creates a map visualization using `ggplot2` and supports either
+#' a `viridis` color scale or a custom gradient color scale, defined by the user. It allows for detailed
+#' customization of color breaks, labels, and plot titles.
+#'
+#' @param fill.scale.title Character. The title for the fill scale (legend).
+#' @param main.title Character. The main title of the plot.
+#' @param sub.title Character. The subtitle of the plot.
+#' @param fillground sf object. The spatial data to be filled and plotted.
+#' @param fillground2 sf object. A secondary spatial data layer for plotting outlines such as surrounding landmass (default is the same as `fillground`).
+#' @param pltly.text Character or NULL. Text information to be displayed in tooltips (for interactive plots).
+#' @param transformation Character. Transformation to be applied to the fill scale. Default is "identity".
+#' @param col.limits Numeric vector. The limits for the color scale. Default is `c(0, max(variable))`.
+#' @param to.plot Numeric vector. The data values to be plotted.
+#' @param clr.breaks Numeric vector. The breaks for the color scale. Default is generated by `colour.brks`.
+#' @param clr.labels Character vector. Labels for the color breaks. Default is generated by `colour.lable`.
+#' @param use.viridis Logical. If `TRUE`, the `viridis` color scale is used. If `FALSE`, a custom gradient scale from `low.col` to `high.col` is used. Default is `TRUE`.
+#' @param low.col Character. The low-end color for the gradient scale (used when `use.viridis = FALSE`). Default is "white".
+#' @param high.col Character. The high-end color for the gradient scale (used when `use.viridis = FALSE`). Default is "red".
+#'
+#' @return A `ggplot` object.
+#'
+#' @examples
+#' # Example with viridis color scale
+#'
+#' # Example with custom gradient color scale
+#'
+#' @export
+map.ploter <- function(fill.scale.title,
+                       main.title,
+                       sub.title,
+                       fillground = COUNTRY.ATI.shp,
+                       fillground2 = COUNTRY.ATI.shp,
+                       pltly.text = NULL,
+                       transformation = "identity",
+                       col.limits = c(0, max(variable)),
+                       to.plot = variable,
+                       clr.breaks = colour.brks(lims = colour.limits),
+                       clr.labels = colour.lable(x = variable,
+                                                 lims = colour.limits,
+                                                 breaks = colour.brks(colour.limits),
+                                                 dividor = 1),
+                       use.viridis = TRUE,
+                       low.col = "white",
+                       high.col = "red") {
+
+  ggplot() +
+    geom_sf(data = fillground, mapping = aes(fill = to.plot, text = pltly.text), colour = NA) +
+    geom_sf(data = fillground, fill = NA, size = 0.05, colour = "grey90") +
+    {
+      if (use.viridis) {
+        scale_fill_viridis_c(trans = transformation,
+                             name = fill.scale.title,
+                             limits = col.limits,
+                             oob = scales::squish,
+                             breaks = clr.breaks,
+                             labels = clr.labels,
+                             guide = guide_colorbar(
+                               direction = "horizontal", barheight = unit(2, units = "mm"),
+                               barwidth = unit(50, units = "mm"), draw.ulim = F,
+                               title.position = 'top', title.hjust = 0.5, label.hjust = 0.5))
+      } else {
+        scale_fill_gradient(low = low.col, high = high.col,
+                            name = fill.scale.title,
+                            limits = col.limits,
+                            oob = scales::squish,
+                            breaks = clr.breaks,
+                            labels = clr.labels,
+                            guide = guide_colorbar(
+                              direction = "horizontal", barheight = unit(2, units = "mm"),
+                              barwidth = unit(50, units = "mm"), draw.ulim = F,
+                              title.position = 'top', title.hjust = 0.5, label.hjust = 0.5))
+      }
+    } +
+    labs(x = NULL, y = NULL, title = main.title, subtitle = sub.title) +
+    theme_map() +
+    theme(legend.position = "bottom")
+}
+
+
+
+
+
+
+
+
+
+###########################################################################
+# spatial curation --------------------------------------------------------
+###########################################################################
+
+## hexgrid over landscape ----
+
+#' Generate an Efficient Target Hexagonal Grid
+#'
+#' This function creates a hexagonal grid over a specified target area by intersecting it with a master grid mask.
+#' The resulting hexagonal grid is associated with grid IDs and calculates the area of each hexagon in hectares.
+#' This optimized version reduces redundant operations and improves spatial computation efficiency.
+#'
+#' @param master.grid.mask sf object. A spatial feature representing the area over which the initial grid is generated. Default is `countries`.
+#' @param grid.size Numeric vector of length 2. Specifies the horizontal and vertical distances between the centers of adjacent hexagons.
+#'        Example: `c(hexdist.h, hexdist.v)`.
+#' @param target sf object. The target area to intersect with the hexagonal grid.
+#'
+#' @return An `sf` object representing the hexagonal grid intersected with the target area. The object contains the grid ID and the area of each hexagon in hectares.
+#'
+#' @examplesIf requireNamespace("sf", quietly = TRUE)
+#' # Example 1: Simple hexagonal grid over a country shape
+#' # Create a simple polygon representing the target area
+#' target_area <- sf::st_as_sf(sf::st_sfc(sf::st_polygon(list(cbind(c(0, 10, 10, 0, 0), c(0, 0, 10, 10, 0))))), crs = 4326)
+#'
+#' # Create a master grid mask (e.g., a larger bounding box)
+#' master_grid_mask <- sf::st_as_sf(sf::st_sfc(sf::st_polygon(list(cbind(c(-5, 15, 15, -5, -5), c(-5, -5, 15, 15, -5))))), crs = 4326)
+#'
+#' # Define grid size (hexagon spacing)
+#' grid_size <- c(1, 1)
+#'
+#' # Generate hexagonal grid
+#' hex_grid <- Umake.target.hexgrid(master.grid.mask = master_grid_mask, grid.size = grid_size, target = target_area)
+#'
+#' # Plot the result
+#' plot(sf::st_geometry(hex_grid))
+#' plot(sf::st_geometry(target_area), add = TRUE, border = 'red')
+#'
+#' # Example 2: Using a predefined dataset (e.g., countries) as master grid mask
+#' # Assume 'countries' is an existing sf object with country boundaries
+#' grid_size <- c(10000, 10000) # 10 km spacing
+#' hex_grid <- Umake.target.hexgrid(master.grid.mask = countries, grid.size = grid_size, target = target_area)
+#' plot(sf::st_geometry(hex_grid))
+#' plot(sf::st_geometry(target_area), add = TRUE, border = 'blue')
+#'
+#' @importFrom sf st_make_grid st_sf st_polygon st_intersection st_make_valid st_area st_cast st_geometry
+#' @importFrom units set_units
+#' @export
+Umake.target.hexgrid <- function(master.grid.mask = countries,
+                                 grid.size = c(hexdist.h, hexdist.v),
+                                 target) {
+  # Ensure inputs are valid sf objects
+  if (!inherits(master.grid.mask, "sf")) stop("master.grid.mask must be an sf object.")
+  if (!inherits(target, "sf")) stop("target must be an sf object.")
+
+  # Create a hexagonal grid over the master grid mask
+  hex.grid <- st_make_grid(master.grid.mask, grid.size, what = "polygons", square = FALSE) %>%
+    st_sf() %>%
+    mutate(grid_id = seq_len(length(.)))
+
+  # Perform intersection and ensure valid geometries
+  target.hexgrid <- st_intersection(st_make_valid(hex.grid), st_make_valid(target))
+
+  # Handle the case where intersection might be empty
+  if (nrow(target.hexgrid) == 0) {
+    warning("The intersection resulted in an empty grid.")
+    return(target.hexgrid)
+  }
+
+  # Calculate the area of each polygon in hectares and add as a column
+  target.hexgrid <- target.hexgrid %>%
+    mutate(hex.ha = as.numeric(set_units(st_area(.), "ha"))) %>%
+    dplyr::select(grid_id, hex.ha) %>%
+    st_cast("MULTIPOLYGON", do_split = TRUE) %>%
+    st_cast("POLYGON")
+
+  target.hexgrid
+}
+
+
+## st_erase ----
+
+#' Erase Geometries from a Spatial Object
+#'
+#' A helper function that erases all of y from x. This function removes all geometries in one spatial object (`y`) from another spatial object (`x`).
+#' It performs a spatial difference operation, effectively erasing the area covered by `y` from `x`.
+#'
+#' @param x An `sf` object. The spatial object from which geometries will be removed.
+#' @param y An `sf` object. The spatial object containing geometries to be erased from `x`.
+#'
+#' @return An `sf` object. The resulting spatial object after erasing the geometries in `y` from `x`.
+#'
+#' @examplesIf requireNamespace("sf", quietly = TRUE)
+#' # Example usage with simple feature objects
+#' x <- sf::st_read(system.file("shape/nc.shp", package="sf")) # example data
+#' y <- sf::st_buffer(x, dist = 5000) # create a buffer around x for demonstration
+#' result <- st_erase(x, y)
+#' plot(sf::st_geometry(x), col = 'lightblue', main = "Original and Erased")
+#' plot(sf::st_geometry(y), add = TRUE, border = 'red')
+#' plot(sf::st_geometry(result), add = TRUE, col = 'green')
+#'
+#' @importFrom sf st_difference st_union st_combine
+#' @export
+st_erase <- function(x, y) {
+  if (!inherits(x, "sf") || !inherits(y, "sf")) {
+    stop("'x' and 'y' must be 'sf' objects.")
+  }
+
+  # Perform spatial difference operation to erase y from x
+  sf::st_difference(x, sf::st_union(sf::st_combine(y)))
+}
+
+## st_first.spatial.curation ----
+
+#' Perform Initial Spatial Curation on Polygon Data
+#'
+#' This function applies a series of spatial operations to clean and simplify polygon data. It transforms the coordinate reference system, simplifies the geometry, buffers to address tiny gaps, and makes the geometries valid.
+#'
+#' @param x An `sf` object of type `POLYGON` or `MULTIPOLYGON`. The spatial data to be curated.
+#' @param tolerance Numeric. The tolerance level for geometry simplification. Higher values result in more simplification. Default is 10.
+#' @param tiny.buff Numeric. The distance (in the CRS units) to buffer polygons to address tiny gaps. Default is 0.0001.
+#' @param smallest.hole Numeric. The minimum area of holes to be removed. Currently not used in this implementation but can be added for additional filtering.
+#'
+#' @return An `sf` object of type `POLYGON` or `MULTIPOLYGON`. The curated spatial data after applying the transformations.
+#'
+#' @examplesIf requireNamespace("sf", quietly = TRUE)
+#' # Example usage with polygon data
+#' x <- sf::st_read(system.file("shape/nc.shp", package="sf")) # example data
+#' curated_data <- st_first.spatial.curation(x)
+#' plot(sf::st_geometry(curated_data), main = "Curated Polygon Data")
+#'
+#' @importFrom sf st_transform st_simplify st_buffer st_make_valid st_read st_geometry
+#' @export
+st_first.spatial.curation <- function(x, tolerance = 10, tiny.buff = 0.0001, smallest.hole = 5000) {
+  if (!inherits(x, "sf")) {
+    stop("'x' must be an 'sf' object.")
+  }
+
+  x %>%
+    sf::st_transform(crs = 27700) %>%                   # Transform to British National Grid (or another CRS)
+    sf::st_simplify(preserveTopology = TRUE, dTolerance = tolerance) %>%  # Simplify geometry
+    sf::st_buffer(dist = tiny.buff) %>%                  # Buffer to address tiny gaps
+    sf::st_simplify(preserveTopology = TRUE, dTolerance = tolerance) %>%  # Simplify geometry again
+    sf::st_make_valid()                                 # Make geometries valid
+}
+
+
+###########################################################################
+# add rows that total all english regions and UK CARs ---------------------
+###########################################################################
+
+# add_eng_uk_tots ---------------------------------------------------------
+#' Add England and UK Totals
+#'
+#' This function adds England and UK total rows to a data frame, summing up values as needed.
+#'
+#' @param df Data frame to which totals will be added.
+#' @param of_colmn Column name to sum.
+#' @param by_var Optional grouping variable.
+#' @param cars.areas Optional vector of car area values.
+#' @param cars.names Optional vector of car names.
+#'
+#' @return Data frame with England and UK totals added.
+#' @export
+add_eng_uk_tots <- function(df, of_colmn, by_var = NULL, cars.areas = NULL, cars.names = NULL) {
+  if (!("ha.cars" %in% names(df))) {
+    stop("Column 'ha.cars' is required if 'cars.areas' and 'cars.names' are provided.")
+  }
+
+  print.order <- data.frame(Name = c("Central", "North", "South East", "South West", "England Total", "Northern Ireland", "Scotland", "Wales", "UK Total"))
+  print.order$order <- 1:nrow(print.order)
+
+  if (!is.null(cars.areas) && !is.null(cars.names)) {
+    df <- bind_rows(df,
+                    data.frame(Name = cars.names[!cars.names %in% df$Name],
+                               ha.car_rainfor = 0,
+                               ha.cars = cars.areas[!cars.names %in% df$Name]))
+  }
+
+  uk.dat <- df %>%
+    group_by(across({{ by_var }})) %>%
+    summarise(across({{ of_colmn }}, list(sum = ~ sum(., na.rm = TRUE)))) %>%
+    mutate(Name = "UK Total")
+  names(uk.dat) <- str_remove(names(uk.dat), "_sum")
+
+  eng.regions.dat <- df %>%
+    filter(Name %in% c("Central", "North", "South East", "South West")) %>%
+    group_by(across({{ by_var }})) %>%
+    summarise(across({{ of_colmn }}, list(sum = ~ sum(., na.rm = TRUE)))) %>%
+    mutate(Name = "England Total")
+  names(eng.regions.dat) <- str_remove(names(eng.regions.dat), "_sum")
+
+  if ("ha.cars" %in% names(df)) {
+    eng.regions.dat$ha.cars <- sum(cars.areas[!duplicated(cars.names) & (cars.names %in% c("Central", "North", "South East", "South West"))])
+    uk.dat$ha.cars <- sum(cars.areas[!duplicated(cars.names)])
+  }
+
+  nu.df <- bind_rows(df, eng.regions.dat, uk.dat) %>%
+    full_join(print.order, by = "Name") %>%
+    arrange(across({{ by_var }})) %>%
+    arrange(order) %>%
+    select(1:(ncol(df) + 1))
+
+  nu.df
+}
+
+
+## sum_group_by_country - Just sum cars by country ----
+#' Sum Values by Country and Add UK Total
+#'
+#' This function sums values by country and adds totals for England and the UK.
+#'
+#' @param df Data frame to process.
+#' @param of_colmn Column name to sum.
+#' @param by_var Optional grouping variable.
+#' @param cars.areas Optional vector of car area values.
+#' @param cars.names Optional vector of car names.
+#'
+#' @return Data frame with sums by country and UK total.
+#' @export
+sum_group_by_country <- function(df, of_colmn, by_var = NULL, cars.areas = NULL, cars.names = NULL) {
+  print.order <- data.frame(Name = c(sort(countries.names), "UK Total"))
+  print.order$order <- 1:nrow(print.order)
+
+  not.eng <- df %>%
+    filter(Name %in% countries.names)
+
+  eng <- df %>%
+    filter(Name %in% england.cars) %>%
+    group_by(across({{ by_var }})) %>%
+    summarise(across({{ of_colmn }}, list(sum = ~ sum(., na.rm = TRUE)))) %>%
+    mutate(Name = "England")
+  names(eng) <- str_remove(names(eng), "_sum")
+
+  uk.dat <- df %>%
+    group_by(across({{ by_var }})) %>%
+    summarise(across({{ of_colmn }}, list(sum = ~ sum(., na.rm = TRUE)))) %>%
+    mutate(Name = "UK Total")
+  names(uk.dat) <- str_remove(names(uk.dat), "_sum")
+
+  if ("ha.cars" %in% names(df)) {
+    eng$ha.cars <- sum(cars.areas[!duplicated(cars.names) & (cars.names %in% england.cars)])
+    uk.dat$ha.cars <- sum(cars.areas[!duplicated(cars.names)])
+  }
+
+  nu.df <- bind_rows(not.eng, eng, uk.dat) %>%
+    full_join(print.order, by = "Name") %>%
+    arrange(across({{ by_var }})) %>%
+    arrange(order) %>%
+    select(1:(ncol(df) + 1))
+
+  nu.df
+}
+
+
+
+# Print with commas -------------------------------------------------------
+#' Format Vector with Commas
+#'
+#' This function formats a vector of strings with commas and "and" for readability.
+#'
+#' @param vec Character vector.
+#'
+#' @return Formatted string.
+#' @export
+print_with_commas <- function(vec) {
+  if (!is.character(vec)) {
+    stop("'vec' must be a character vector.")
+  }
+
+  n <- length(vec)
+  if (n == 0) {
+    return("")
+  } else if (n == 1) {
+    return(vec[1])
+  } else if (n == 2) {
+    return(paste(vec, collapse = " and "))
+  } else {
+    return(paste(paste(vec[-n], collapse = ", "), vec[n], sep = ", and "))
+  }
+}
+
+
+# map_cat - map categorical sequential covar -----
+#' Create a Categorical Map with ggplot2
+#'
+#' This function generates a categorical map using the `ggplot2` package to visualize spatial data. It allows for customization of titles, fill scale, and includes world map outlines (only ne countries, can edidt this).
+#'
+#' @param grid An `sf` object containing the spatial data to be visualized. Default is `pred.nwss.grid %>% st_simplify(dTolerance = 100)`.
+#' @param var.name The name of the column in `grid` to be used for categorization. Default is `"grid.vet.type"`.
+#' @param main.title The main title of the map. Default is `"NWSS veteran records"`.
+#' @param sub.title Optional. The subtitle of the map. Default is `NULL`.
+#' @param fill.scale.title Optional. Title for the fill scale (legend). Default is `NULL`.
+#'
+#' @return A `ggplot` object containing the generated map.
+#'
+#' @examples
+#' # Example using built-in dataset
+#' if (requireNamespace("sf", quietly = TRUE) && requireNamespace("ggplot2", quietly = TRUE) && requireNamespace("rnaturalearth", quietly = TRUE)) {
+#'   # Use built-in example data
+#'   grid <- sf::st_as_sf(sf::st_sfc(sf::st_polygon(list(cbind(c(0, 10, 10, 0, 0), c(0, 0, 10, 10, 0))))), crs = 4326)
+#'   map_cat(grid, var.name = "grid.vet.type", main.title = "Example Map", fill.scale.title = "Category")
+#' }
+#'
+#' @importFrom ggplot2 ggplot geom_sf scale_fill_viridis_d labs coord_sf theme theme_map
+#' @importFrom rnaturalearth ne_countries
+#' @importFrom sf st_transform st_bbox
+#' @export
+map_cat <- function(grid = pred.nwss.grid %>% sf::st_simplify(dTolerance = 100),
+                    var.name = "grid.vet.type",
+                    main.title = "NWSS veteran records",
+                    sub.title = NULL,
+                    fill.scale.title = NULL) {
+  # Ensure required packages are installed
+  if (!requireNamespace("ggplot2", quietly = TRUE)) {
+    stop("The 'ggplot2' package is required but not installed.")
+  }
+  if (!requireNamespace("rnaturalearth", quietly = TRUE)) {
+    stop("The 'rnaturalearth' package is required but not installed.")
+  }
+  if (!requireNamespace("sf", quietly = TRUE)) {
+    stop("The 'sf' package is required but not installed.")
+  }
+
+
+  # Retrieve world data
+  world <- rnaturalearth::ne_countries(scale = "large", returnclass = "sf")
+
+  # Extract the variable for filling
+  var <- as.data.frame(grid)[[var.name]]
+
+  # Create the map
+  var.map <- ggplot2::ggplot(data = grid) +
+    ggplot2::geom_sf(data = world %>% sf::st_transform(27700), size = 0.1) +
+    ggplot2::geom_sf(mapping = ggplot2::aes(fill = var), colour = NA, size = 0) +
+    ggplot2::scale_fill_viridis_d(name = fill.scale.title, na.value = "transparent",
+                                  guide = ggplot2::guide_legend(title.position = "top", title.hjust = 0)) +
+    ggplot2::geom_sf(data = world %>% sf::st_transform(27700), size = 0.1, fill = NA) +
+    ggplot2::labs(x = NULL, y = NULL, title = main.title, subtitle = sub.title) +
+    ggplot2::coord_sf(xlim = pad.lim(sf::st_bbox(grid)[c(1, 3)]),
+                      ylim = pad.lim(sf::st_bbox(grid)[c(2, 4)]),
+                      expand = FALSE) +
+    theme_map() +
+    ggplot2::theme(legend.position = "right")
+
+  return(var.map)
+}
