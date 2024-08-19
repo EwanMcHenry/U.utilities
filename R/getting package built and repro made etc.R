@@ -15,7 +15,7 @@ pad.lim(1:5)
 
 
 # bash
-git remote add origin https://github.com/EwanMcHenry/U.utilities.git
+#git remote add origin https://github.com/EwanMcHenry/U.utilities.git
 
 
 # R
