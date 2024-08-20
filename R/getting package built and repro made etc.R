@@ -20,3 +20,7 @@ pad.lim(1:5)
 
 # R
 gitcreds::gitcreds_set()
+
+
+devtools::install_github("EwanMcHenry/U.utilities")
+
