@@ -29,12 +29,3 @@ A \code{ggplot} object containing the generated map.
 \description{
 This function generates a categorical map using the \code{ggplot2} package to visualize spatial data. It allows for customization of titles, fill scale, and includes world map outlines (only ne countries, can edidt this).
 }
-\examples{
-# Example using built-in dataset
-if (requireNamespace("sf", quietly = TRUE) && requireNamespace("ggplot2", quietly = TRUE) && requireNamespace("rnaturalearth", quietly = TRUE)) {
-  # Use built-in example data
-  grid <- sf::st_as_sf(sf::st_sfc(sf::st_polygon(list(cbind(c(0, 10, 10, 0, 0), c(0, 0, 10, 10, 0))))), crs = 4326)
-  map_cat(grid, var.name = "grid.vet.type", main.title = "Example Map", fill.scale.title = "Category")
-}
-
-}

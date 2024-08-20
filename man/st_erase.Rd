@@ -18,14 +18,3 @@ An \code{sf} object. The resulting spatial object after erasing the geometries i
 A helper function that erases all of y from x. This function removes all geometries in one spatial object (\code{y}) from another spatial object (\code{x}).
 It performs a spatial difference operation, effectively erasing the area covered by \code{y} from \code{x}.
 }
-\examples{
-\dontshow{if (requireNamespace("sf", quietly = TRUE)) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
-# Example usage with simple feature objects
-x <- sf::st_read(system.file("shape/nc.shp", package="sf")) # example data
-y <- sf::st_buffer(x, dist = 5000) # create a buffer around x for demonstration
-result <- st_erase(x, y)
-plot(sf::st_geometry(x), col = 'lightblue', main = "Original and Erased")
-plot(sf::st_geometry(y), add = TRUE, border = 'red')
-plot(sf::st_geometry(result), add = TRUE, col = 'green')
-\dontshow{\}) # examplesIf}
-}

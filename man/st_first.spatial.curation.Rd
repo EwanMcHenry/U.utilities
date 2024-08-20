@@ -28,9 +28,5 @@ This function applies a series of spatial operations to clean and simplify polyg
 }
 \examples{
 \dontshow{if (requireNamespace("sf", quietly = TRUE)) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
-# Example usage with polygon data
-x <- sf::st_read(system.file("shape/nc.shp", package="sf")) # example data
-curated_data <- st_first.spatial.curation(x)
-plot(sf::st_geometry(curated_data), main = "Curated Polygon Data")
 \dontshow{\}) # examplesIf}
 }
