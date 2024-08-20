@@ -16,7 +16,9 @@ Imports:
     sf (>= 1.0.0),
     stringr (>= 1.4.0),
     scales (>= 1.1.1),
-    Hmisc (>= 4.5.0)
+    Hmisc (>= 4.5.0),
+    magrittr (>= 1.5.0),
+    units (>= 0.6.0)
 Suggests: 
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
