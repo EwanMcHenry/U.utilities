@@ -297,6 +297,7 @@ map.ploter <- function(fill.scale.title,
 
 ## hexgrid over landscape ----
 
+
 #' Generate an Efficient Target Hexagonal Grid
 #'
 #' This function creates a hexagonal grid over a specified target area by intersecting it with a master grid mask.
@@ -310,33 +311,9 @@ map.ploter <- function(fill.scale.title,
 #'
 #' @return An `sf` object representing the hexagonal grid intersected with the target area. The object contains the grid ID and the area of each hexagon in hectares.
 #'
-#' @examplesIf requireNamespace("sf", quietly = TRUE)
-#' # Example 1: Simple hexagonal grid over a country shape
-#' # Create a simple polygon representing the target area
-#' target_area <- sf::st_as_sf(sf::st_sfc(sf::st_polygon(list(cbind(c(0, 10, 10, 0, 0), c(0, 0, 10, 10, 0))))), crs = 4326)
-#'
-#' # Create a master grid mask (e.g., a larger bounding box)
-#' master_grid_mask <- sf::st_as_sf(sf::st_sfc(sf::st_polygon(list(cbind(c(-5, 15, 15, -5, -5), c(-5, -5, 15, 15, -5))))), crs = 4326)
-#'
-#' # Define grid size (hexagon spacing)
-#' grid_size <- c(1, 1)
-#'
-#' # Generate hexagonal grid
-#' hex_grid <- Umake.target.hexgrid(master.grid.mask = master_grid_mask, grid.size = grid_size, target = target_area)
-#'
-#' # Plot the result
-#' plot(sf::st_geometry(hex_grid))
-#' plot(sf::st_geometry(target_area), add = TRUE, border = 'red')
-#'
-#' # Example 2: Using a predefined dataset (e.g., countries) as master grid mask
-#' # Assume 'countries' is an existing sf object with country boundaries
-#' grid_size <- c(10000, 10000) # 10 km spacing
-#' hex_grid <- Umake.target.hexgrid(master.grid.mask = countries, grid.size = grid_size, target = target_area)
-#' plot(sf::st_geometry(hex_grid))
-#' plot(sf::st_geometry(target_area), add = TRUE, border = 'blue')
-#'
 #' @importFrom sf st_make_grid st_sf st_polygon st_intersection st_make_valid st_area st_cast st_geometry
 #' @importFrom units set_units
+#' @import magrittr
 #' @export
 Umake.target.hexgrid <- function(master.grid.mask = countries,
                                  grid.size = c(hexdist.h, hexdist.v),
@@ -346,12 +323,14 @@ Umake.target.hexgrid <- function(master.grid.mask = countries,
   if (!inherits(target, "sf")) stop("target must be an sf object.")
 
   # Create a hexagonal grid over the master grid mask
-  hex.grid <- st_make_grid(master.grid.mask, grid.size, what = "polygons", square = FALSE) %>%
-    st_sf() %>%
-    mutate(grid_id = seq_len(length(.)))
+  hex.grid <- sf::st_make_grid(master.grid.mask, grid.size, what = "polygons", square = FALSE)
+  hex.grid <- sf::st_sf(hex.grid)
+  hex.grid$grid_id <- seq_len(nrow(hex.grid))
 
   # Perform intersection and ensure valid geometries
-  target.hexgrid <- st_intersection(st_make_valid(hex.grid), st_make_valid(target))
+  hex.grid.valid <- sf::st_make_valid(hex.grid)
+  target.valid <- sf::st_make_valid(target)
+  target.hexgrid <- sf::st_intersection(hex.grid.valid, target.valid)
 
   # Handle the case where intersection might be empty
   if (nrow(target.hexgrid) == 0) {
@@ -360,13 +339,14 @@ Umake.target.hexgrid <- function(master.grid.mask = countries,
   }
 
   # Calculate the area of each polygon in hectares and add as a column
-  target.hexgrid <- target.hexgrid %>%
-    mutate(hex.ha = as.numeric(set_units(st_area(.), "ha"))) %>%
-    dplyr::select(grid_id, hex.ha) %>%
-    st_cast("MULTIPOLYGON", do_split = TRUE) %>%
-    st_cast("POLYGON")
+  area_ha <- as.numeric(units::set_units(sf::st_area(target.hexgrid), "ha"))
+  target.hexgrid$hex.ha <- area_ha
 
-  target.hexgrid
+  # Cast to POLYGON to ensure proper format
+  target.hexgrid <- sf::st_cast(target.hexgrid, "MULTIPOLYGON", do_split = TRUE)
+  target.hexgrid <- sf::st_cast(target.hexgrid, "POLYGON")
+
+  return(target.hexgrid)
 }
 
 
@@ -381,15 +361,6 @@ Umake.target.hexgrid <- function(master.grid.mask = countries,
 #' @param y An `sf` object. The spatial object containing geometries to be erased from `x`.
 #'
 #' @return An `sf` object. The resulting spatial object after erasing the geometries in `y` from `x`.
-#'
-#' @examplesIf requireNamespace("sf", quietly = TRUE)
-#' # Example usage with simple feature objects
-#' x <- sf::st_read(system.file("shape/nc.shp", package="sf")) # example data
-#' y <- sf::st_buffer(x, dist = 5000) # create a buffer around x for demonstration
-#' result <- st_erase(x, y)
-#' plot(sf::st_geometry(x), col = 'lightblue', main = "Original and Erased")
-#' plot(sf::st_geometry(y), add = TRUE, border = 'red')
-#' plot(sf::st_geometry(result), add = TRUE, col = 'green')
 #'
 #' @importFrom sf st_difference st_union st_combine
 #' @export
@@ -416,10 +387,6 @@ st_erase <- function(x, y) {
 #' @return An `sf` object of type `POLYGON` or `MULTIPOLYGON`. The curated spatial data after applying the transformations.
 #'
 #' @examplesIf requireNamespace("sf", quietly = TRUE)
-#' # Example usage with polygon data
-#' x <- sf::st_read(system.file("shape/nc.shp", package="sf")) # example data
-#' curated_data <- st_first.spatial.curation(x)
-#' plot(sf::st_geometry(curated_data), main = "Curated Polygon Data")
 #'
 #' @importFrom sf st_transform st_simplify st_buffer st_make_valid st_read st_geometry
 #' @export
@@ -586,15 +553,7 @@ print_with_commas <- function(vec) {
 #'
 #' @return A `ggplot` object containing the generated map.
 #'
-#' @examples
-#' # Example using built-in dataset
-#' if (requireNamespace("sf", quietly = TRUE) && requireNamespace("ggplot2", quietly = TRUE) && requireNamespace("rnaturalearth", quietly = TRUE)) {
-#'   # Use built-in example data
-#'   grid <- sf::st_as_sf(sf::st_sfc(sf::st_polygon(list(cbind(c(0, 10, 10, 0, 0), c(0, 0, 10, 10, 0))))), crs = 4326)
-#'   map_cat(grid, var.name = "grid.vet.type", main.title = "Example Map", fill.scale.title = "Category")
-#' }
-#'
-#' @importFrom ggplot2 ggplot geom_sf scale_fill_viridis_d labs coord_sf theme theme_map
+#' @importFrom ggplot2 ggplot geom_sf scale_fill_viridis_d labs coord_sf theme
 #' @importFrom rnaturalearth ne_countries
 #' @importFrom sf st_transform st_bbox
 #' @export
