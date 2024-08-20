@@ -5,9 +5,9 @@ library(tidyverse)
 library(sf) # for gis
 
 # Define commonly used working directories
-gis.wd =  "D:\\Users\\Ewan McHenry\\OneDrive - the Woodland Trust\\GIS\\"
+gis.wd =  "D:\\Users\\Ewan McHenry\\OneDrive - the Woodland Trust\\GIS"
 main.wd = "D:\\Users\\Ewan McHenry\\OneDrive - the Woodland Trust\\GIS\\Data"
-cars.factfile.direct =  paste0(gis.wd, "CARs\\CARs factfile\\")
+cars.factfile.direct =  paste0(gis.wd, "\\CARs\\CARs factfile\\")
 
 
 # Generate datasets ----
