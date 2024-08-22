@@ -82,6 +82,7 @@ usethis::use_data(
   ceh.col.pallette,
   ceh.full.habtype,
   ceh.concatted1.habtype,
+  E.cols,
   overwrite = TRUE
 )
 

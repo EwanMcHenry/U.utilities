@@ -7,6 +7,7 @@
 # devtools::check()
 # devtools::build()
 # devtools::install()
+# library(U.utilities)
 
 
 # build("D:\\Users\\Ewan McHenry\\OneDrive - the Woodland Trust\\Analysis\\U.utilities")
