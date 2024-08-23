@@ -166,9 +166,9 @@ theme_map <- function(leg.tit.size = 8,
 #'
 #' @export
 colour.brks <- function(lims, n = 5, round_to = 100) {
-  breaks <- seq(from = lims[1], to = lims[2], length.out = n)
+  breaks <- seq(from = min(lims), to = max(lims), length.out = n)
   rounded_breaks <- round(breaks / round_to) * round_to
-  return(rounded_breaks)
+  return(unique(rounded_breaks))
 }
 
 ## colour.lable ----
@@ -199,12 +199,11 @@ colour.brks <- function(lims, n = 5, round_to = 100) {
 #' @export
 colour.lable <- function(x, lims, n = 5, dividor = 1, round_to = 1) {
   breaks <- colour.brks(lims, n = n, round_to = round_to)
-  rounded_labels <- round(breaks / dividor / round_to) * round_to
 
   if (max(lims, na.rm = TRUE) < max(x, na.rm = TRUE)) {
-    paste(rounded_labels, c(rep("", times = length(rounded_labels) - 1), "+"))
+    paste(breaks, c(rep("", times = length(breaks) - 1), "+"))
   } else {
-    paste(rounded_labels)
+    paste(breaks)
   }
 }
 
