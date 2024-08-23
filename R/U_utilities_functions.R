@@ -149,63 +149,64 @@ theme_map <- function(leg.tit.size = 8,
 
 ## colour.brks ----
 
-#' Generate Color Breaks with Significant Figures
+#' Generate Color Breaks with Rounding
 #'
-#' This function generates a sequence of evenly spaced numeric breaks within the specified limits,
-#' rounded to a specified number of significant figures.
+#' This function generates a sequence of numeric breaks within the specified limits
+#' and rounds them to the nearest specified value.
 #'
 #' @param lims Numeric vector of length 2. Specifies the minimum and maximum limits for the breaks.
 #' @param n Integer. The number of breaks to generate. Default is 5.
-#' @param sig_figs Integer. The number of significant figures to which the breaks should be rounded. Default is 3.
+#' @param round_to Numeric. The value to which the breaks should be rounded (e.g., 10 for tens, 100 for hundreds). Default is 1 (no rounding).
 #'
-#' @return A numeric vector of breaks rounded to the specified number of significant figures.
+#' @return A numeric vector of rounded breaks.
 #'
 #' @examples
-#' lims <- c(1, 10)
-#' colour.brks(lims, n = 5, sig_figs = 3)
+#' lims <- c(1, 1000)
+#' colour.brks(lims, n = 5, round_to = 100)
 #'
 #' @export
-colour.brks <- function(lims, n = 5, sig_figs = 3) {
+colour.brks <- function(lims, n = 5, round_to = 100) {
   breaks <- seq(from = lims[1], to = lims[2], length.out = n)
-  signif(breaks, digits = sig_figs)
+  rounded_breaks <- round(breaks / round_to) * round_to
+  return(rounded_breaks)
 }
-
 
 ## colour.lable ----
 
-#' Generate Labeled Color Breaks with Significant Figures
+#' Generate Labeled Color Breaks with Rounding
 #'
 #' This function generates labeled breaks for color scales based on provided limits,
-#' rounded to a specified number of significant figures. It supports appending a "+" symbol
+#' rounded to a specified value. It supports appending a "+" symbol
 #' to the highest break if the data exceeds the specified limits.
 #'
 #' @param x Numeric vector. The data to be used for determining if the "+" symbol should be added to the highest break.
 #' @param lims Numeric vector of length 2. Specifies the minimum and maximum limits for the breaks.
 #' @param n Integer. The number of breaks to generate. Default is 5.
 #' @param dividor Numeric. A value by which to divide the breaks for labeling. Default is 1.
-#' @param sig_figs Integer. The number of significant figures to which the labels should be rounded. Default is 3.
+#' @param round_to Numeric. The value to which the labels should be rounded (e.g., 10 for tens, 100 for hundreds). Default is 1 (no rounding).
 #'
 #' @return A character vector of labels for the breaks, with the highest value possibly having a "+" symbol if `max(x)` exceeds `max(lims)`.
 #'
 #' @examples
 #' x <- c(1, 2, 3, 4, 5, 6, 7)
 #' lims <- c(1, 5)
-#' colour.lable(x, lims, n = 5, dividor = 1, sig_figs = 3)
+#' colour.lable(x, lims, n = 5, dividor = 1, round_to = 10)
 #'
 #' # Example where max(x) exceeds max(lims)
 #' x <- c(1, 2, 3, 4, 5, 6, 10)
-#' colour.lable(x, lims, n = 5, dividor = 1, sig_figs = 3)
+#' colour.lable(x, lims, n = 5, dividor = 1, round_to = 10)
 #'
 #' @export
-colour.lable <- function(x, lims, n = 5, dividor = 1, sig_figs = 3) {
-  breaks <- colour.brks(lims, n = n, sig_figs = sig_figs)
+colour.lable <- function(x, lims, n = 5, dividor = 1, round_to = 1) {
+  breaks <- colour.brks(lims, n = n, round_to = round_to)
+  rounded_labels <- round(breaks / dividor / round_to) * round_to
+
   if (max(lims, na.rm = TRUE) < max(x, na.rm = TRUE)) {
-    paste(signif(breaks / dividor, digits = sig_figs), c(rep("", times = length(breaks) - 1), "+"))
+    paste(rounded_labels, c(rep("", times = length(rounded_labels) - 1), "+"))
   } else {
-    paste(signif(breaks / dividor, digits = sig_figs))
+    paste(rounded_labels)
   }
 }
-
 
 ## map plotter ----
 

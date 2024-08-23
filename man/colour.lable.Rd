@@ -2,9 +2,9 @@
 % Please edit documentation in R/U_utilities_functions.R
 \name{colour.lable}
 \alias{colour.lable}
-\title{Generate Labeled Color Breaks with Significant Figures}
+\title{Generate Labeled Color Breaks with Rounding}
 \usage{
-colour.lable(x, lims, n = 5, dividor = 1, sig_figs = 3)
+colour.lable(x, lims, n = 5, dividor = 1, round_to = 1)
 }
 \arguments{
 \item{x}{Numeric vector. The data to be used for determining if the "+" symbol should be added to the highest break.}
@@ -15,23 +15,23 @@ colour.lable(x, lims, n = 5, dividor = 1, sig_figs = 3)
 
 \item{dividor}{Numeric. A value by which to divide the breaks for labeling. Default is 1.}
 
-\item{sig_figs}{Integer. The number of significant figures to which the labels should be rounded. Default is 3.}
+\item{round_to}{Numeric. The value to which the labels should be rounded (e.g., 10 for tens, 100 for hundreds). Default is 1 (no rounding).}
 }
 \value{
 A character vector of labels for the breaks, with the highest value possibly having a "+" symbol if \code{max(x)} exceeds \code{max(lims)}.
 }
 \description{
 This function generates labeled breaks for color scales based on provided limits,
-rounded to a specified number of significant figures. It supports appending a "+" symbol
+rounded to a specified value. It supports appending a "+" symbol
 to the highest break if the data exceeds the specified limits.
 }
 \examples{
 x <- c(1, 2, 3, 4, 5, 6, 7)
 lims <- c(1, 5)
-colour.lable(x, lims, n = 5, dividor = 1, sig_figs = 3)
+colour.lable(x, lims, n = 5, dividor = 1, round_to = 10)
 
 # Example where max(x) exceeds max(lims)
 x <- c(1, 2, 3, 4, 5, 6, 10)
-colour.lable(x, lims, n = 5, dividor = 1, sig_figs = 3)
+colour.lable(x, lims, n = 5, dividor = 1, round_to = 10)
 
 }

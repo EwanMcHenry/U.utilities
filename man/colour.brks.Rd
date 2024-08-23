@@ -2,26 +2,26 @@
 % Please edit documentation in R/U_utilities_functions.R
 \name{colour.brks}
 \alias{colour.brks}
-\title{Generate Color Breaks with Significant Figures}
+\title{Generate Color Breaks with Rounding}
 \usage{
-colour.brks(lims, n = 5, sig_figs = 3)
+colour.brks(lims, n = 5, round_to = 100)
 }
 \arguments{
 \item{lims}{Numeric vector of length 2. Specifies the minimum and maximum limits for the breaks.}
 
 \item{n}{Integer. The number of breaks to generate. Default is 5.}
 
-\item{sig_figs}{Integer. The number of significant figures to which the breaks should be rounded. Default is 3.}
+\item{round_to}{Numeric. The value to which the breaks should be rounded (e.g., 10 for tens, 100 for hundreds). Default is 1 (no rounding).}
 }
 \value{
-A numeric vector of breaks rounded to the specified number of significant figures.
+A numeric vector of rounded breaks.
 }
 \description{
-This function generates a sequence of evenly spaced numeric breaks within the specified limits,
-rounded to a specified number of significant figures.
+This function generates a sequence of numeric breaks within the specified limits
+and rounds them to the nearest specified value.
 }
 \examples{
-lims <- c(1, 10)
-colour.brks(lims, n = 5, sig_figs = 3)
+lims <- c(1, 1000)
+colour.brks(lims, n = 5, round_to = 100)
 
 }
