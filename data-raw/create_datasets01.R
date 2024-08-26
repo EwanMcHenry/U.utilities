@@ -86,3 +86,8 @@ usethis::use_data(
   overwrite = TRUE
 )
 
+# projection shortcuts ----
+projections <- list(
+  ukgrid = "+init=epsg:27700",
+  wgs4326 = "+init=epsg:4326"
+)
