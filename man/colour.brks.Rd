@@ -4,7 +4,7 @@
 \alias{colour.brks}
 \title{Generate Color Breaks with Rounding}
 \usage{
-colour.brks(lims, n = 5, round_to = 100)
+colour.brks(lims, n = 5, round_to = 100, just_pretty = T)
 }
 \arguments{
 \item{lims}{Numeric vector of length 2. Specifies the minimum and maximum limits for the breaks.}

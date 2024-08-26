@@ -4,7 +4,7 @@
 \alias{colour.lable}
 \title{Generate Labeled Color Breaks with Rounding}
 \usage{
-colour.lable(x, lims, n = 5, dividor = 1, round_to = 1)
+colour.lable(x, lims, n = 5, dividor = 1, round_to = 1, just_pretty = T)
 }
 \arguments{
 \item{x}{Numeric vector. The data to be used for determining if the "+" symbol should be added to the highest break.}
