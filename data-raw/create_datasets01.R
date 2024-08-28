@@ -64,6 +64,13 @@ E.cols = list(
   connectiv.low = "#0051FF"
 )
 
+# projection shortcuts ----
+projections <- list(
+  ukgrid = "+init=epsg:27700",
+  irishgrid = "+init=epsg:29902",
+  wgs4326 = "+init=epsg:4326"
+)
+
 
 # Save datasets
 usethis::use_data(
@@ -82,12 +89,11 @@ usethis::use_data(
   ceh.col.pallette,
   ceh.full.habtype,
   ceh.concatted1.habtype,
-  E.cols,
+  E.cols, projections,
   overwrite = TRUE
 )
 
-# projection shortcuts ----
-projections <- list(
-  ukgrid = "+init=epsg:27700",
-  wgs4326 = "+init=epsg:4326"
-)
+# all_objects <- ls()
+#
+# # Save all objects to your package's data directory
+# usethis::use_data(list = all_objects, overwrite = TRUE)
