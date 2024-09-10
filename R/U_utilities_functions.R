@@ -604,3 +604,42 @@ map_cat <- function(grid = pred.nwss.grid %>% sf::st_simplify(dTolerance = 100),
 
   return(var.map)
 }
+
+
+# create_ordered_table  -----
+
+#' Create Ordered Table
+#'
+#' This function creates a table based on the provided row and column variables, and orders
+#' the rows by their total sum in descending order. You can choose to create a frequency table
+#' or a proportion table. The table can also be rounded to a specified number of digits.
+#'
+#' @param data A data frame containing the data.
+#' @param row_var The variable name (as a string) to be used for the rows.
+#' @param col_var The variable name (as a string) to be used for the columns.
+#' @param type The type of table to create. It can be either "frequency" or "proportion". Default is "frequency".
+#' @param round_digits The number of digits to round the proportions to. Default is 3.
+#'
+#' @return A table with ordered rows and margins added.
+#' @examples
+#'
+#' @export
+
+create_ordered_table <- function(data, row_var, col_var, type = c("frequency", "proportion"), round_digits = 3) {
+  # Create the table using the specified row and column variables
+  table_data <- table(data[[row_var]], data[[col_var]])
+
+  # Order the rows by the sum of each row, in descending order
+  ordered_table <- table_data[order(rowSums(table_data), decreasing = TRUE), ]
+
+  # Check if the user wants a proportion table
+  if (type == "proportion") {
+    ordered_table <- prop.table(ordered_table) # Convert to proportions
+    ordered_table <- round(ordered_table, round_digits) # Round proportions
+  }
+
+  # Add margins to the table
+  ordered_table_with_margins <- addmargins(ordered_table, margin = c(1, 2))
+
+  return(ordered_table_with_margins)
+}
