@@ -621,7 +621,6 @@ map_cat <- function(grid = pred.nwss.grid %>% sf::st_simplify(dTolerance = 100),
 #' @param round_digits The number of digits to round the proportions to. Default is 3.
 #'
 #' @return A table with ordered rows and margins added.
-#' @examples
 #'
 #' @export
 
