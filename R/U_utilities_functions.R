@@ -642,3 +642,36 @@ create_ordered_table <- function(data, row_var, col_var, type = c("frequency", "
 
   return(ordered_table_with_margins)
 }
+
+
+# replace roudned zeros with "<" string -----
+#' Replace Rounded Zeros with a String
+#'
+#' This function rounds numeric data to a specified precision and replaces values
+#' greater than 0 but rounded to 0 with a string indicating a value smaller than the threshold.
+#'
+#' @param data A numeric vector or matrix.
+#' @param precision The number of decimal places to round the data. Default is 3.
+#'
+#' @return A vector or matrix with values replaced by a string if they are greater than 0
+#' but round to 0, and the rest rounded to the specified precision.
+#'
+#' @examples
+#' data <- c(0.0004, 0.00003, 0.5, 1)
+#' replace_rounded_zeros_with_string(data, precision = 3)
+#'
+#' @export
+replace_rounded_zeros_with_string <- function(data, precision = 3) {
+
+  # Round the data
+  rounded_data <- round(data, precision)
+
+  # Find the threshold value for the precision (e.g., 0.001 for precision = 3)
+  threshold <- 1 / (10^precision)
+  replacement_str <- paste0("<", format(threshold, nsmall = precision))
+
+  # Replace values greater than 0 but rounded to 0 with the replacement string
+  adjusted_data <- ifelse(data > 0 & rounded_data == 0, replacement_str, rounded_data)
+
+  return(adjusted_data)
+}
