@@ -633,14 +633,21 @@ create_ordered_table <- function(data, row_var, col_var, type = c("frequency", "
 
   # Check if the user wants a proportion table
   if (type == "proportion") {
-    ordered_table <- prop.table(ordered_table) # Convert to proportions
+    ordered_table <- prop.table(ordered_table) %>% # Convert to proportions
+      addmargins(, margin = c(1, 2))
     ordered_table <- round(ordered_table, round_digits) # Round proportions
+
+    return(ordered_table)
+
+  }else{
+    ordered_table <- ordered_table %>%
+      addmargins(, margin = c(1, 2))
+    ordered_table <- round(ordered_table, round_digits) # Round proportions
+
+    return(ordered_table)
   }
 
-  # Add margins to the table
-  ordered_table_with_margins <- addmargins(ordered_table, margin = c(1, 2))
 
-  return(ordered_table_with_margins)
 }
 
 
