@@ -14,12 +14,13 @@ map.ploter(
   transformation = "identity",
   col.limits = c(0, max(variable)),
   to.plot = variable,
-  clr.breaks = colour.brks(lims = colour.limits),
-  clr.labels = colour.lable(x = variable, lims = colour.limits, breaks =
-    colour.brks(colour.limits), dividor = 1),
+  clr.breaks = colour.brks(lims = col.limits, n = 5, round_to = 100, just_pretty = T),
+  clr.labels = colour.lable(x = variable, lims = col.limits, n = 5, dividor = 1, round_to
+    = 1, just_pretty = T),
   use.viridis = TRUE,
   low.col = "white",
-  high.col = "red"
+  high.col = "red",
+  hex.line_size = 0.05
 )
 }
 \arguments{
