@@ -149,65 +149,146 @@ theme_map <- function(leg.tit.size = 8,
 
 ## colour.brks ----
 
-#' Generate Color Breaks with Rounding
+#' Generate Color Breaks with Transformations
 #'
-#' This function generates a sequence of numeric breaks within the specified limits
-#' and rounds them to the nearest specified value.
+#' This function generates a sequence of evenly spaced numeric breaks within the specified limits.
+#' It supports various transformations (log, sqrt, identity) and rounding to specific values.
 #'
 #' @param lims Numeric vector of length 2. Specifies the minimum and maximum limits for the breaks.
 #' @param n Integer. The number of breaks to generate. Default is 5.
-#' @param round_to Numeric. The value to which the breaks should be rounded (e.g., 10 for tens, 100 for hundreds). Default is 1 (no rounding).
+#' @param round_to Numeric. The value to which the breaks should be rounded. Default is 100.
+#' @param just_pretty Logical. Whether to use pretty breaks or evenly spaced breaks. Default is TRUE.
+#' @param transformation Character. The transformation to apply, one of "identity", "log10", or "sqrt". Default is "identity".
 #'
-#' @return A numeric vector of rounded breaks.
+#' @return A numeric vector of breaks, rounded to the specified value.
 #'
 #' @examples
 #' lims <- c(1, 1000)
-#' colour.brks(lims, n = 5, round_to = 100)
+#' colour.brks(lims, n = 5, round_to = 100, just_pretty = TRUE, transformation = "identity")
+#' colour.brks(lims, n = 5, round_to = 100, just_pretty = TRUE, transformation = "log10")
+#' colour.brks(lims, n = 5, round_to = 100, just_pretty = TRUE, transformation = "sqrt")
 #'
 #' @export
-colour.brks <- function(lims, n = 5, round_to = 100, just_pretty = T) {
-  if(just_pretty){
-    return(pretty(n = n, lims))} else {
+
+colour.brks <- function(lims,
+                        n = 5,
+                        round_to = 100,
+                        just_pretty = TRUE,
+                        transformation = "identity") {
+  # Handle the case for zero in limits
+  include_zero <- 0 %in% lims
+
+  if (just_pretty) {
+    if (transformation == "log10") {
+      if (any(lims < 0)) stop("Log transformation requires non-negative limits.")
+
+      # Transform zero to a very small positive value if included
+      log_lims <- log10(pmax(lims, .Machine$double.eps))  # avoid log10(0)
+      breaks <- pretty(log_lims, n = n)
+
+      # Transform back to original scale and round
+      rounded_breaks <- round(10^breaks / round_to) * round_to
+      if (include_zero) {
+        rounded_breaks <- c(0, unique(rounded_breaks))
+      }
+      return(unique(rounded_breaks))
+
+    } else if (transformation == "sqrt") {
+      # Generate pretty breaks on the sqrt scale
+      sqrt_lims <- sqrt(lims)
+      breaks <- pretty(sqrt_lims, n = n)
+
+      # Transform back to original scale and round
+      rounded_breaks <- round(breaks^2 / round_to) * round_to
+      if (include_zero) {
+        rounded_breaks <- c(0, unique(rounded_breaks))
+      }
+      return(unique(rounded_breaks))
+
+    } else {
+      # For identity and other transformations
+      breaks <- pretty(lims, n = n)
+      rounded_breaks <- round(breaks / round_to) * round_to
+      if (include_zero) {
+        rounded_breaks <- c(0, unique(rounded_breaks))
+      }
+      return(unique(rounded_breaks))
+    }
+  } else {
+    # Generate evenly spaced breaks on the transformed scale (log/sqrt/identity)
+    if (transformation == "log10") {
+      if (any(lims < 0)) stop("Log transformation requires non-negative limits.")
+
+      # Handle zero explicitly
+      log_lims <- log10(pmax(lims, .Machine$double.eps))
+      breaks <- seq(from = min(log_lims), to = max(log_lims), length.out = n)
+      rounded_breaks <- round(10^breaks / round_to) * round_to
+      if (include_zero) {
+        rounded_breaks <- c(0, unique(rounded_breaks))
+      }
+      return(unique(rounded_breaks))
+
+    } else if (transformation == "sqrt") {
+      sqrt_lims <- sqrt(lims)
+      breaks <- seq(from = min(sqrt_lims), to = max(sqrt_lims), length.out = n)
+      rounded_breaks <- round(breaks^2 / round_to) * round_to
+      if (include_zero) {
+        rounded_breaks <- c(0, unique(rounded_breaks))
+      }
+      return(unique(rounded_breaks))
+
+    } else {
+      # For identity or other transformations
       breaks <- seq(from = min(lims), to = max(lims), length.out = n)
       rounded_breaks <- round(breaks / round_to) * round_to
-      return(unique(rounded_breaks))}
+      if (include_zero) {
+        rounded_breaks <- c(0, unique(rounded_breaks))
+      }
+      return(unique(rounded_breaks))
+    }
+  }
 }
+
 
 ## colour.lable ----
 
-#' Generate Labeled Color Breaks with Rounding
+#' Generate  Color Break Labels
 #'
-#' This function generates labeled breaks for color scales based on provided limits,
-#' rounded to a specified value. It supports appending a "+" symbol
-#' to the highest break if the data exceeds the specified limits.
+#' This function generates labeled breaks for color scales based on provided limits.
+#' It supports appending a "+" symbol to the highest break if the data exceeds the specified limits.
 #'
 #' @param x Numeric vector. The data to be used for determining if the "+" symbol should be added to the highest break.
 #' @param lims Numeric vector of length 2. Specifies the minimum and maximum limits for the breaks.
 #' @param n Integer. The number of breaks to generate. Default is 5.
-#' @param dividor Numeric. A value by which to divide the breaks for labeling. Default is 1.
-#' @param round_to Numeric. The value to which the labels should be rounded (e.g., 10 for tens, 100 for hundreds). Default is 1 (no rounding).
+#' @param round_to Integer. The number to round the breaks to (e.g., 1 for rounding to the nearest whole number). Default is 1.
+#' @param just_pretty Logical. Whether to make the breaks look "pretty" using the `pretty` function. Default is TRUE.
+#' @param transformation Character. A transformation to apply to the breaks, such as "identity", "log", or "sqrt". Default is "identity".
 #'
 #' @return A character vector of labels for the breaks, with the highest value possibly having a "+" symbol if `max(x)` exceeds `max(lims)`.
 #'
-#' @examples
-#' x <- c(1, 2, 3, 4, 5, 6, 7)
-#' lims <- c(1, 5)
-#' colour.lable(x, lims, n = 5, dividor = 1, round_to = 10)
-#'
-#' # Example where max(x) exceeds max(lims)
-#' x <- c(1, 2, 3, 4, 5, 6, 10)
-#' colour.lable(x, lims, n = 5, dividor = 1, round_to = 10)
-#'
 #' @export
-colour.lable <- function(x, lims, n = 5, dividor = 1, round_to = 1, just_pretty = T) {
-  breaks <- colour.brks(lims, n = n, round_to = round_to, just_pretty = just_pretty)
+
+colour.lable <- function(x,
+                         lims,
+                         n = 5,
+                         round_to = 1,
+                         just_pretty = T,
+                         transformation = "identity") {
+  breaks <- colour.brks(lims,
+                        n = n,
+                        round_to = round_to,
+                        just_pretty = just_pretty,
+                        transformation = transformation)
+  # Format the breaks to remove scientific notation and add commas
+  formatted_breaks <- trimws(format(breaks, big.mark = ",", scientific = FALSE))
 
   if (max(lims, na.rm = TRUE) < max(x, na.rm = TRUE)) {
-    paste(breaks, c(rep("", times = length(breaks) - 1), "+"))
+    paste(formatted_breaks, c(rep("", times = length(formatted_breaks) - 1), "+"))
   } else {
-    paste(breaks)
+    paste(formatted_breaks)
   }
 }
+
 
 ## map plotter ----
 
@@ -244,29 +325,42 @@ map.ploter <- function(fill.scale.title,
                        main.title,
                        sub.title,
                        fillground = COUNTRY.ATI.shp,
-                       fillground2 = COUNTRY.ATI.shp,
+                       background = COUNTRY.ATI.shp,
                        pltly.text = NULL,
                        transformation = "identity",
-                       col.limits = c(0, max(variable)),
                        to.plot = variable,
-                       clr.breaks = colour.brks(lims = col.limits,
-                                                n = 5,
-                                                round_to = 100,
-                                                just_pretty = T),
-                       clr.labels = colour.lable(x = variable,
-                                                 lims = col.limits,
-                                                 n = 5,
-                                                 dividor = 1,
-                                                 round_to = 1,
-                                                 just_pretty = T),
+                       col.limits = c(0, max(variable)),
                        use.viridis = TRUE,
                        low.col = "white",
                        high.col = "red",
-                       hex.line_size = 0.05) {
+                       fill.line_size = 0.05,
+                       fill.line_colour = "grey90",
+                       background.fill = "grey90",
+                       background.size = 0.05,
+                       background.colour = "black",
+                       n.breaks = 5,
+                       round_to = 1,
+                       just_pretty = T
+                       ) {
+  clr.breaks = colour.brks(lims = col.limits,
+                           n = n.breaks,
+                           round_to = round_to,
+                           just_pretty = just_pretty,
+                           transformation = transformation)
+
+  clr.labels = colour.lable(x = to.plot,
+                            lims = col.limits,
+                            n = n.breaks,
+                            round_to = round_to,
+                            just_pretty = just_pretty,
+                            transformation = transformation)
 
   ggplot() +
-    geom_sf(data = fillground, mapping = aes(fill = to.plot, text = pltly.text), colour = NA) +
-    geom_sf(data = fillground, fill = NA, size = hex.line_size, colour = "grey90") +
+    geom_sf(data = background, fill = background.fill, size = background.size, colour = background.colour) +
+    geom_sf(data = fillground, mapping = aes(fill = to.plot, text = pltly.text), colour = fill.line_colour,
+            size = fill.line_size) +
+    geom_sf(data = background, fill = NA, size = background.size, colour = background.colour) +
+
     {
       if (use.viridis) {
         scale_fill_viridis_c(trans = transformation,
@@ -296,13 +390,6 @@ map.ploter <- function(fill.scale.title,
     theme_map() +
     theme(legend.position = "bottom")
 }
-
-
-
-
-
-
-
 
 
 ###########################################################################

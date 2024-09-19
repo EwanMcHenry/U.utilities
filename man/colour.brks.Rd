@@ -2,26 +2,38 @@
 % Please edit documentation in R/U_utilities_functions.R
 \name{colour.brks}
 \alias{colour.brks}
-\title{Generate Color Breaks with Rounding}
+\title{Generate Color Breaks with Transformations}
 \usage{
-colour.brks(lims, n = 5, round_to = 100, just_pretty = T)
+colour.brks(
+  lims,
+  n = 5,
+  round_to = 100,
+  just_pretty = TRUE,
+  transformation = "identity"
+)
 }
 \arguments{
 \item{lims}{Numeric vector of length 2. Specifies the minimum and maximum limits for the breaks.}
 
 \item{n}{Integer. The number of breaks to generate. Default is 5.}
 
-\item{round_to}{Numeric. The value to which the breaks should be rounded (e.g., 10 for tens, 100 for hundreds). Default is 1 (no rounding).}
+\item{round_to}{Numeric. The value to which the breaks should be rounded. Default is 100.}
+
+\item{just_pretty}{Logical. Whether to use pretty breaks or evenly spaced breaks. Default is TRUE.}
+
+\item{transformation}{Character. The transformation to apply, one of "identity", "log10", or "sqrt". Default is "identity".}
 }
 \value{
-A numeric vector of rounded breaks.
+A numeric vector of breaks, rounded to the specified value.
 }
 \description{
-This function generates a sequence of numeric breaks within the specified limits
-and rounds them to the nearest specified value.
+This function generates a sequence of evenly spaced numeric breaks within the specified limits.
+It supports various transformations (log, sqrt, identity) and rounding to specific values.
 }
 \examples{
 lims <- c(1, 1000)
-colour.brks(lims, n = 5, round_to = 100)
+colour.brks(lims, n = 5, round_to = 100, just_pretty = TRUE, transformation = "identity")
+colour.brks(lims, n = 5, round_to = 100, just_pretty = TRUE, transformation = "log10")
+colour.brks(lims, n = 5, round_to = 100, just_pretty = TRUE, transformation = "sqrt")
 
 }
