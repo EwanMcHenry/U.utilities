@@ -9,7 +9,8 @@ colour.brks(
   n = 5,
   round_to = 100,
   just_pretty = TRUE,
-  transformation = "identity"
+  transformation = "identity",
+  manual_breaks = NULL
 )
 }
 \arguments{
@@ -22,6 +23,8 @@ colour.brks(
 \item{just_pretty}{Logical. Whether to use pretty breaks or evenly spaced breaks. Default is TRUE.}
 
 \item{transformation}{Character. The transformation to apply, one of "identity", "log10", or "sqrt". Default is "identity".}
+
+\item{manual_breaks}{Option to provide manual breaks directly.}
 }
 \value{
 A numeric vector of breaks, rounded to the specified value.

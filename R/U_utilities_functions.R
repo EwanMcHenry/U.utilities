@@ -159,6 +159,7 @@ theme_map <- function(leg.tit.size = 8,
 #' @param round_to Numeric. The value to which the breaks should be rounded. Default is 100.
 #' @param just_pretty Logical. Whether to use pretty breaks or evenly spaced breaks. Default is TRUE.
 #' @param transformation Character. The transformation to apply, one of "identity", "log10", or "sqrt". Default is "identity".
+#' @param manual_breaks Option to provide manual breaks directly.
 #'
 #' @return A numeric vector of breaks, rounded to the specified value.
 #'
@@ -174,8 +175,17 @@ colour.brks <- function(lims,
                         n = 5,
                         round_to = 100,
                         just_pretty = TRUE,
-                        transformation = "identity") {
-  # Handle the case for zero in limits
+                        transformation = "identity",
+                        manual_breaks = NULL) {
+
+  if (!is.null(manual_breaks)) {
+    # If manual breaks are provided, use them directly
+    return(manual_breaks)
+  }
+
+  # Proceed with automatic breaks calculation if no manual breaks are provided
+
+    # Handle the case for zero in limits
   include_zero <- 0 %in% lims
 
   if (just_pretty) {
@@ -263,6 +273,7 @@ colour.brks <- function(lims,
 #' @param round_to Integer. The number to round the breaks to (e.g., 1 for rounding to the nearest whole number). Default is 1.
 #' @param just_pretty Logical. Whether to make the breaks look "pretty" using the `pretty` function. Default is TRUE.
 #' @param transformation Character. A transformation to apply to the breaks, such as "identity", "log", or "sqrt". Default is "identity".
+#' @param manual_breaks Option to provide manual breaks directly.
 #'
 #' @return A character vector of labels for the breaks, with the highest value possibly having a "+" symbol if `max(x)` exceeds `max(lims)`.
 #'
@@ -273,12 +284,15 @@ colour.lable <- function(x,
                          n = 5,
                          round_to = 1,
                          just_pretty = T,
-                         transformation = "identity") {
+                         transformation = "identity", manual_breaks = NULL) {
+
   breaks <- colour.brks(lims,
                         n = n,
                         round_to = round_to,
                         just_pretty = just_pretty,
-                        transformation = transformation)
+                        transformation = transformation,
+                        manual_breaks = manual_breaks)
+
   # Format the breaks to remove scientific notation and add commas
   formatted_breaks <- trimws(format(breaks, big.mark = ",", scientific = FALSE))
 
@@ -312,6 +326,7 @@ colour.lable <- function(x,
 #' @param use.viridis Logical. If `TRUE`, the `viridis` color scale is used. If `FALSE`, a custom gradient scale from `low.col` to `high.col` is used. Default is `TRUE`.
 #' @param low.col Character. The low-end color for the gradient scale (used when `use.viridis = FALSE`). Default is "white".
 #' @param high.col Character. The high-end color for the gradient scale (used when `use.viridis = FALSE`). Default is "red".
+#' @param manual_breaks Option to provide manual scale breaks directly.
 #'
 #' @return A `ggplot` object.
 #'
@@ -321,15 +336,15 @@ colour.lable <- function(x,
 #' # Example with custom gradient color scale
 #'
 #' @export
-map.ploter <- function(fill.scale.title,
+map.ploter <- function(to.plot = variable,
+                       fill.scale.title,
                        main.title,
                        sub.title,
                        fillground = COUNTRY.ATI.shp,
                        background = COUNTRY.ATI.shp,
-                       pltly.text = NULL,
                        transformation = "identity",
-                       to.plot = variable,
                        col.limits = c(0, max(variable)),
+                       pltly.text = NULL,
                        use.viridis = TRUE,
                        low.col = "white",
                        high.col = "red",
@@ -340,20 +355,23 @@ map.ploter <- function(fill.scale.title,
                        background.colour = "black",
                        n.breaks = 5,
                        round_to = 1,
-                       just_pretty = T
+                       just_pretty = T,
+                       manual_breaks = NULL
                        ) {
   clr.breaks = colour.brks(lims = col.limits,
                            n = n.breaks,
                            round_to = round_to,
                            just_pretty = just_pretty,
-                           transformation = transformation)
+                           transformation = transformation,
+                           manual_breaks = manual_breaks)
 
   clr.labels = colour.lable(x = to.plot,
                             lims = col.limits,
                             n = n.breaks,
                             round_to = round_to,
                             just_pretty = just_pretty,
-                            transformation = transformation)
+                            transformation = transformation,
+                            manual_breaks = manual_breaks)
 
   ggplot() +
     geom_sf(data = background, fill = background.fill, size = background.size, colour = background.colour) +

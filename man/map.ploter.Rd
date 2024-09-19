@@ -5,15 +5,15 @@
 \title{Custom Map Plotter with ggplot2}
 \usage{
 map.ploter(
+  to.plot = variable,
   fill.scale.title,
   main.title,
   sub.title,
   fillground = COUNTRY.ATI.shp,
   background = COUNTRY.ATI.shp,
-  pltly.text = NULL,
   transformation = "identity",
-  to.plot = variable,
   col.limits = c(0, max(variable)),
+  pltly.text = NULL,
   use.viridis = TRUE,
   low.col = "white",
   high.col = "red",
@@ -24,10 +24,13 @@ map.ploter(
   background.colour = "black",
   n.breaks = 5,
   round_to = 1,
-  just_pretty = T
+  just_pretty = T,
+  manual_breaks = NULL
 )
 }
 \arguments{
+\item{to.plot}{Numeric vector. The data values to be plotted.}
+
 \item{fill.scale.title}{Character. The title for the fill scale (legend).}
 
 \item{main.title}{Character. The main title of the plot.}
@@ -36,19 +39,19 @@ map.ploter(
 
 \item{fillground}{sf object. The spatial data to be filled and plotted.}
 
-\item{pltly.text}{Character or NULL. Text information to be displayed in tooltips (for interactive plots).}
-
 \item{transformation}{Character. Transformation to be applied to the fill scale. Default is "identity".}
 
-\item{to.plot}{Numeric vector. The data values to be plotted.}
-
 \item{col.limits}{Numeric vector. The limits for the color scale. Default is \code{c(0, max(variable))}.}
+
+\item{pltly.text}{Character or NULL. Text information to be displayed in tooltips (for interactive plots).}
 
 \item{use.viridis}{Logical. If \code{TRUE}, the \code{viridis} color scale is used. If \code{FALSE}, a custom gradient scale from \code{low.col} to \code{high.col} is used. Default is \code{TRUE}.}
 
 \item{low.col}{Character. The low-end color for the gradient scale (used when \code{use.viridis = FALSE}). Default is "white".}
 
 \item{high.col}{Character. The high-end color for the gradient scale (used when \code{use.viridis = FALSE}). Default is "red".}
+
+\item{manual_breaks}{Option to provide manual scale breaks directly.}
 
 \item{fillground2}{sf object. A secondary spatial data layer for plotting outlines such as surrounding landmass (default is the same as \code{fillground}).}
 

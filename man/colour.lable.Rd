@@ -10,7 +10,8 @@ colour.lable(
   n = 5,
   round_to = 1,
   just_pretty = T,
-  transformation = "identity"
+  transformation = "identity",
+  manual_breaks = NULL
 )
 }
 \arguments{
@@ -25,6 +26,8 @@ colour.lable(
 \item{just_pretty}{Logical. Whether to make the breaks look "pretty" using the \code{pretty} function. Default is TRUE.}
 
 \item{transformation}{Character. A transformation to apply to the breaks, such as "identity", "log", or "sqrt". Default is "identity".}
+
+\item{manual_breaks}{Option to provide manual breaks directly.}
 }
 \value{
 A character vector of labels for the breaks, with the highest value possibly having a "+" symbol if \code{max(x)} exceeds \code{max(lims)}.
