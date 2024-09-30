@@ -12,7 +12,7 @@ map.ploter(
   fillground = COUNTRY.ATI.shp,
   background = COUNTRY.ATI.shp,
   transformation = "identity",
-  col.limits = c(0, max(variable)),
+  col.limits = c(0, max(to.plot)),
   pltly.text = NULL,
   use.viridis = TRUE,
   low.col = "white",
