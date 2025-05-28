@@ -357,8 +357,8 @@ map.ploter <- function(to.plot = variable,
                        use.viridis = TRUE,
                        low.col = "white",
                        high.col = "red",
-                       fill.line_size = 0.05,
-                       fill.line_colour = "grey90",
+                       fill.line_size = 0,
+                       fill.line_colour = NA,
                        background.fill = "grey90",
                        background.size = 0.05,
                        background.colour = "black",
@@ -535,7 +535,7 @@ st_erase <- function(x, y) {
 #'
 #' @importFrom sf st_transform st_simplify st_buffer st_make_valid st_read st_geometry
 #' @export
-st_first.spatial.curation <- function(x, tolerance = 10, tiny.buff = 0.0001, smallest.hole = 5000) {
+st_first.spatial.curation <- function(x, tolerance = 10, tiny.buff = 0.0001) {
   if (!inherits(x, "sf")) {
     stop("'x' must be an 'sf' object.")
   }
