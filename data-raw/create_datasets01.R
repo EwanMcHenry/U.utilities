@@ -97,3 +97,22 @@ usethis::use_data(
 #
 # # Save all objects to your package's data directory
 # usethis::use_data(list = all_objects, overwrite = TRUE)
+
+# wt pallette ----
+
+# Woodland Trust color palette
+wt_palette<-c(
+  "#FFFFFF",#white
+  "#0D7D67",#dark teal green
+  "#A3CB3A",#lime green
+  "#1DBB66",#vivid green
+  "#2B2B2A",#near black
+  "#FFCB05",#sunflower yellow
+  "#38B0C5",#sky blue
+  "#FF9DC9",#pink
+  "#8F8AFB",#periwinkle
+  "#7DD5D5",#turquoise
+  "#FF7A08",#orange
+  "#891C23" #deepred
+)
+
