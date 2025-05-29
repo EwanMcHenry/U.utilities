@@ -2,7 +2,7 @@
 # # thiscauses an infinite loop becasue thiscoderuns itself! lol, so im gonna comment it all out, jsut run each bit seperate
 
 
-
+#
 # devtools::document()
 # devtools::check()
 # devtools::build()
@@ -10,9 +10,9 @@
 # library(U.utilities)
 
 
-# build("D:\\Users\\Ewan McHenry\\OneDrive - the Woodland Trust\\Analysis\\U.utilities")
-# install("D:\\Users\\Ewan McHenry\\OneDrive - the Woodland Trust\\Analysis\\U.utilities")
-# check("D:\\Users\\Ewan McHenry\\OneDrive - the Woodland Trust\\Analysis\\U.utilities")
+# devtools::build("D:\\Users\\Ewan McHenry\\OneDrive - the Woodland Trust\\Analysis\\U.utilities")
+# devtools::install("D:\\Users\\Ewan McHenry\\OneDrive - the Woodland Trust\\Analysis\\U.utilities")
+# devtools::check("D:\\Users\\Ewan McHenry\\OneDrive - the Woodland Trust\\Analysis\\U.utilities")
 #
 # library(U.utilities)
 # pad.lim(1:5)
