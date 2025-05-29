@@ -4,12 +4,7 @@
 \alias{st_first.spatial.curation}
 \title{Perform Initial Spatial Curation on Polygon Data}
 \usage{
-st_first.spatial.curation(
-  x,
-  tolerance = 10,
-  tiny.buff = 1e-04,
-  smallest.hole = 5000
-)
+st_first.spatial.curation(x, tolerance = 10, tiny.buff = 1e-04)
 }
 \arguments{
 \item{x}{An \code{sf} object of type \code{POLYGON} or \code{MULTIPOLYGON}. The spatial data to be curated.}
