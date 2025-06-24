@@ -25,7 +25,7 @@ ts.andAll.lcm.names = c(ts.lcm.names,"AllTreescapes")
 # CARs names
 england.car.names = c("Central", "North", "South East", "South West")
 countries.names = c("England",  "Northern Ireland", "Scotland", "Wales")
-
+car.names = c("Central", "North", "South East", "South West", "Northern Ireland", "Scotland", "Wales")
 
 # lcm ----
 ceh.col.pallette = c("#FF0000" # broadleaf
@@ -104,6 +104,7 @@ usethis::use_data(
   ts.andAll.nice.names,
   ts.andAll.lcm.names,
   england.car.names,
+  car.names,
   countries.names,
   ceh.col.pallette,
   ceh.full.habtype,
