@@ -1,5 +1,101 @@
 
 # general utilities ----
+
+## bin_numeric_vector ----
+#' Bin a numeric vector using custom breaks and return a factor with readable labels
+#'
+#' Bins a numeric vector into intervals defined by `breaks`, returning a factor with
+#' labels like "0–4", "5–19", "500+" (for the final bin). Suitable for summarising or plotting.
+#'
+#' @param x A numeric vector to be binned.
+#' @param breaks A numeric vector of breakpoints. Must be sorted and unique.
+#' @param use_plus Logical. If `TRUE`, the final bin will be open-ended with "+" (e.g., "500+").
+#' @param separator String used between bounds in labels. Defaults to en dash `"–"`.
+#'
+#' @return A factor assigning each `x` to a bin, with ordered levels and readable labels.
+#'
+#' @examples
+#' x <- c(1, 3, 10, 25, 600)
+#' breaks <- c(0, 5, 20, 100, 500, 1000)
+#' bin_numeric_vector(x, breaks)
+#'
+#' @export
+bin_numeric_vector <- function(x, breaks, use_plus = TRUE, separator = "\u2013") {
+  if (!is.numeric(x)) stop("`x` must be numeric.")
+  if (!is.numeric(breaks) || length(breaks) < 2) {
+    stop("`breaks` must be a numeric vector with at least two values.")
+  }
+
+  breaks <- sort(unique(breaks))
+  bin_labels <- character(length(breaks) - 1)
+
+  for (i in seq_along(bin_labels)) {
+    lower <- breaks[i]
+    upper <- breaks[i + 1] - 1
+
+    if (i == length(bin_labels) && use_plus) {
+      bin_labels[i] <- paste0(lower, "+")
+    } else {
+      bin_labels[i] <- paste0(lower, separator, upper)
+    }
+  }
+
+  # Cut into bins using right=FALSE to match label logic: [lower, upper)
+  binned <- cut(
+    x,
+    breaks = c(breaks[-length(breaks)], Inf),
+    labels = bin_labels,
+    include.lowest = TRUE,
+    right = FALSE
+  )
+
+  return(binned)
+}
+
+
+
+## make_bin_labels ----
+#' Generate human-readable labels for binned numeric ranges
+#'
+#' This function takes a numeric vector of bin breakpoints and returns
+#' character labels in the format "start–end" for use in plots or summaries.
+#' The last bin can optionally be capped or show an open-ended upper limit with a "+".
+#'
+#' @param breaks A numeric vector of bin breakpoints. Must be in increasing order.
+#' @param use_plus Logical, if `TRUE` the final bin label will end with a "+" (e.g., `"5000+"`).
+#'   If `FALSE`, the final bin will use the normal format (e.g., `"5000–9999"`).
+#' @param separator A character string to use between the bin bounds (default is en dash `"–"`).
+#'
+#' @return A character vector of bin labels.
+#' @examples
+#' make_bin_labels(c(0, 5, 20, 100, 500), use_plus = TRUE)
+#' # Returns: "0–4", "5–19", "20–99", "100–499", "500+"
+#'
+#' @export
+make_bin_labels <- function(breaks, use_plus = TRUE, separator = "\u2013") {
+  if (!is.numeric(breaks) || length(breaks) < 2) {
+    stop("`breaks` must be a numeric vector of at least two values.")
+  }
+
+  breaks <- sort(unique(breaks))
+
+  labels <- character(length(breaks) - 1)
+
+  for (i in seq_along(labels)) {
+    lower <- breaks[i]
+    upper <- breaks[i + 1] - 1
+
+    # If this is the last bin and use_plus = TRUE, show open-ended label
+    if (i == length(labels) && use_plus) {
+      labels[i] <- paste0(lower, "+")
+    } else {
+      labels[i] <- paste0(lower, separator, upper)
+    }
+  }
+
+  return(labels)
+}
+
 ## find limits ----
 
 #' Find Limits for Variable Scaling
