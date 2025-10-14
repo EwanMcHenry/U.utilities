@@ -125,8 +125,6 @@ usethis::use_data(
   ceh.concatted1.habtype,
   E.cols, projections,
   wt_palette,
-  lcm.years,
-  raster.res,
   lcm.directs,
   overwrite = TRUE
 )
