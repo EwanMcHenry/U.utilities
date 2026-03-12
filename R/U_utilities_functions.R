@@ -448,9 +448,9 @@ map.ploter <- function(
     main.title = NULL,
     sub.title = NULL,
     background = NULL,
-    geom_type = c("polygon", "point"),
-    categorical = FALSE,
-    colours = NULL,    # named vector for categorical colours
+    geom_type = c("polygon","point"),
+    categorical = NULL,
+    colours = NULL,
     use.viridis = TRUE,
     low.col = "white",
     high.col = "red",
@@ -465,104 +465,169 @@ map.ploter <- function(
     manual_breaks = NULL,
     quantile.probs = NULL,
     use.plotly = FALSE,
-    pltly.text = NULL
-) {
+    pltly.text = NULL,
+    transformation = "identity",
+    col.limits = NULL
+){
 
   geom_type <- match.arg(geom_type)
 
-  # handle background
   if (is.null(background)) background <- fillground
 
-  map <- ggplot() +
-    geom_sf(data = background, fill = background.fill, size = background.size, colour = background.colour)
+  # --- allow to.plot as vector OR column name ---
+  if (!is.null(to.plot) && !is.character(to.plot)) {
+    fillground$..plotvar.. <- to.plot
+    to.plot <- "..plotvar.."
+  }
 
-  # Points
+  plot_vals <- fillground[[to.plot]]
+
+  # auto detect categorical
+  if (is.null(categorical)) {
+    categorical <- is.factor(plot_vals) || is.character(plot_vals)
+  }
+
+  # numeric colour limits
+  if (!categorical) {
+
+    if (!is.null(quantile.probs)) {
+      col.limits <- quantile(plot_vals, probs = quantile.probs, na.rm = TRUE)
+    }
+
+    if (is.null(col.limits)) {
+      col.limits <- range(plot_vals, na.rm = TRUE)
+    }
+
+    clr.breaks <- colour.brks(
+      lims = col.limits,
+      n = n.breaks,
+      round_to = round_to,
+      just_pretty = just_pretty,
+      transformation = transformation,
+      manual_breaks = manual_breaks
+    )
+
+    clr.labels <- colour.lable(
+      x = plot_vals,
+      lims = col.limits,
+      n = n.breaks,
+      round_to = round_to,
+      just_pretty = just_pretty,
+      transformation = transformation,
+      manual_breaks = manual_breaks
+    )
+
+  }
+
+  # --- base map ---
+  map <- ggplot() +
+    geom_sf(
+      data = background,
+      fill = background.fill,
+      size = background.size,
+      colour = background.colour
+    )
+
+  # --- geometry layer ---
   if (geom_type == "point") {
-    if (categorical) {
-      if (is.null(colours)) stop("Provide 'colours' for categorical points")
+
+    map <- map +
+      geom_sf(
+        data = fillground,
+        aes(colour = !!sym(to.plot), text = pltly.text),
+        size = 2
+      )
+
+  } else {
+
+    map <- map +
+      geom_sf(
+        data = fillground,
+        aes(fill = !!sym(to.plot), text = pltly.text),
+        colour = fill.line_colour,
+        size = fill.line_size
+      )
+
+  }
+
+  # --- scales ---
+  if (categorical) {
+
+    if (is.null(colours)) stop("Provide 'colours' for categorical data")
+
+    if (geom_type == "point") {
+
       map <- map +
-        geom_sf(
-          data = fillground,
-          aes(colour = !!sym(to.plot), text = pltly.text),
-          size = 2
-        ) +
         scale_colour_manual(values = colours, name = fill.scale.title)
+
     } else {
-      # numeric
+
       map <- map +
-        geom_sf(
-          data = fillground,
-          aes(colour = !!sym(to.plot), text = pltly.text),
-          size = 2
-        ) +
-        scale_colour_gradient(low = low.col, high = high.col, name = fill.scale.title)
+        scale_fill_manual(values = colours, name = fill.scale.title)
+
     }
 
   } else {
-    # Polygon
-    if (categorical) {
-      if (is.null(colours)) stop("Provide 'colours' for categorical polygons")
+
+    if (geom_type == "point") {
+
       map <- map +
-        geom_sf(
-          data = fillground,
-          aes(fill = !!sym(to.plot), text = pltly.text),
-          colour = fill.line_colour,
-          size = fill.line_size
-        ) +
-        scale_fill_manual(values = colours, name = fill.scale.title)
+        scale_colour_viridis_c(
+          trans = transformation,
+          limits = col.limits,
+          oob = scales::squish,
+          name = fill.scale.title
+        )
+
     } else {
-      # numeric
-      if (!is.null(quantile.probs)) {
-        col.limits <- quantile(fillground[[to.plot]], probs = quantile.probs, na.rm = TRUE)
+
+      if (use.viridis) {
+
+        map <- map +
+          scale_fill_viridis_c(
+            trans = transformation,
+            limits = col.limits,
+            oob = scales::squish,
+            breaks = clr.breaks,
+            labels = clr.labels,
+            name = fill.scale.title,
+            guide = guide_colorbar(
+              direction = "horizontal",
+              barheight = unit(2,"mm"),
+              barwidth = unit(50,"mm"),
+              draw.ulim = FALSE,
+              title.position = "top",
+              title.hjust = 0.5,
+              label.hjust = 0.5
+            )
+          )
+
       } else {
-        col.limits <- range(fillground[[to.plot]], na.rm = TRUE)
+
+        map <- map +
+          scale_fill_gradient(
+            low = low.col,
+            high = high.col,
+            limits = col.limits,
+            oob = scales::squish,
+            breaks = clr.breaks,
+            labels = clr.labels,
+            name = fill.scale.title,
+            guide = guide_colorbar(
+              direction = "horizontal",
+              barheight = unit(2,"mm"),
+              barwidth = unit(50,"mm"),
+              draw.ulim = FALSE,
+              title.position = "top",
+              title.hjust = 0.5,
+              label.hjust = 0.5
+            )
+          )
+
       }
 
-      clr.breaks <- colour.brks(
-        lims = col.limits, n = n.breaks,
-        round_to = round_to, just_pretty = just_pretty,
-        manual_breaks = manual_breaks
-      )
-
-      clr.labels <- colour.lable(
-        x = fillground[[to.plot]],
-        lims = col.limits, n = n.breaks,
-        round_to = round_to, just_pretty = just_pretty,
-        manual_breaks = manual_breaks
-      )
-
-      map <- map +
-        geom_sf(
-          data = fillground,
-          aes(fill = !!sym(to.plot), text = pltly.text),
-          colour = fill.line_colour,
-          size = fill.line_size
-        ) +
-        {
-          if (use.viridis) {
-            scale_fill_viridis_c(
-              name = fill.scale.title, limits = col.limits, oob = scales::squish,
-              breaks = clr.breaks, labels = clr.labels,
-              guide = guide_colorbar(
-                direction = "horizontal", barheight = unit(2, "mm"),
-                barwidth = unit(50, "mm"), draw.ulim = FALSE,
-                title.position = 'top', title.hjust = 0.5, label.hjust = 0.5
-              )
-            )
-          } else {
-            scale_fill_gradient(
-              low = low.col, high = high.col,
-              name = fill.scale.title, limits = col.limits, oob = scales::squish,
-              breaks = clr.breaks, labels = clr.labels,
-              guide = guide_colorbar(
-                direction = "horizontal", barheight = unit(2, "mm"),
-                barwidth = unit(50, "mm"), draw.ulim = FALSE,
-                title.position = 'top', title.hjust = 0.5, label.hjust = 0.5
-              )
-            )
-          }
-        }
     }
+
   }
 
   map <- map +
@@ -576,8 +641,8 @@ map.ploter <- function(
   }
 
   return(map)
-}
 
+}
 
 ###########################################################################
 # spatial curation --------------------------------------------------------
