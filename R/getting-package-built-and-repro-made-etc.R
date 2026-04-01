@@ -16,7 +16,7 @@
 # library(U.utilities)
 # pad.lim(1:5)
 #
-# # bash
+# # bash commands to set up git and push to github
 # #git remote add origin https://github.com/EwanMcHenry/U.utilities.git
 #
 #

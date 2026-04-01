@@ -469,7 +469,8 @@ map.ploter <- function(
     use.plotly = FALSE,
     pltly.text = NULL,
     transformation = "identity",
-    col.limits = NULL
+    col.limits = NULL,
+    nudge_zeros = TRUE
 ){
 
   geom_type <- match.arg(geom_type)
@@ -487,6 +488,12 @@ map.ploter <- function(
   # auto detect categorical
   if (is.null(categorical)) {
     categorical <- is.factor(plot_vals) || is.character(plot_vals)
+  }
+
+  if (!categorical && nudge_zeros) {
+    # Add a small value to zero values to nudge them above the minimum limit
+    min_nonzero <- min(plot_vals[plot_vals > 0], na.rm = TRUE)
+    plot_vals[plot_vals == 0] <- min_nonzero * 0.001
   }
 
   # numeric colour limits

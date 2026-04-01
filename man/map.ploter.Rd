@@ -32,7 +32,8 @@ map.ploter(
   use.plotly = FALSE,
   pltly.text = NULL,
   transformation = "identity",
-  col.limits = NULL
+  col.limits = NULL,
+  nudge_zeros = TRUE
 )
 }
 \arguments{
