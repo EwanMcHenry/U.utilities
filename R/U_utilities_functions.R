@@ -451,6 +451,8 @@ map.ploter <- function(
     geom_type = c("polygon","point"),
     categorical = NULL,
     colours = NULL,
+    point.size = 2,
+    point.alpha = 1,
     use.viridis = TRUE,
     low.col = "white",
     high.col = "red",
@@ -535,7 +537,8 @@ map.ploter <- function(
       geom_sf(
         data = fillground,
         aes(colour = !!sym(to.plot), text = pltly.text),
-        size = 2
+        size = point.size,
+        alpha = point.alpha
       )
 
   } else {
@@ -544,8 +547,8 @@ map.ploter <- function(
       geom_sf(
         data = fillground,
         aes(fill = !!sym(to.plot), text = pltly.text),
-        colour = fill.line_colour,
-        size = fill.line_size
+        colour = NA,
+        linewidth = fill.line_size
       )
 
   }
@@ -558,7 +561,8 @@ map.ploter <- function(
     if (geom_type == "point") {
 
       map <- map +
-        scale_colour_manual(values = colours, name = fill.scale.title)
+        scale_colour_manual(values = colours, name = fill.scale.title,
+                            guide = guide_legend(override.aes = list(size = 2, alpha = 1)))
 
     } else {
 

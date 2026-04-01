@@ -5,15 +5,17 @@
 \title{Custom Map Plotter with ggplot2 and Optional Quantile-Based Color Limits and Plotly Integration}
 \usage{
 map.ploter(
-  to.plot = variable,
-  fill.scale.title,
-  main.title,
-  sub.title,
-  fillground = COUNTRY.ATI.shp,
-  background = COUNTRY.ATI.shp,
-  transformation = "identity",
-  col.limits = c(0, max(to.plot)),
-  pltly.text = NULL,
+  fillground,
+  to.plot = NULL,
+  fill.scale.title = NULL,
+  main.title = NULL,
+  sub.title = NULL,
+  background = NULL,
+  geom_type = c("polygon", "point"),
+  categorical = NULL,
+  colours = NULL,
+  point.size = 2,
+  point.alpha = 1,
   use.viridis = TRUE,
   low.col = "white",
   high.col = "red",
@@ -27,10 +29,15 @@ map.ploter(
   just_pretty = TRUE,
   manual_breaks = NULL,
   quantile.probs = NULL,
-  use.plotly = FALSE
+  use.plotly = FALSE,
+  pltly.text = NULL,
+  transformation = "identity",
+  col.limits = NULL
 )
 }
 \arguments{
+\item{fillground}{sf object. The spatial data to be filled and plotted.}
+
 \item{to.plot}{Numeric vector. The data values to be plotted.}
 
 \item{fill.scale.title}{Character. The title for the fill scale (legend).}
@@ -38,14 +45,6 @@ map.ploter(
 \item{main.title}{Character. The main title of the plot.}
 
 \item{sub.title}{Character. The subtitle of the plot.}
-
-\item{fillground}{sf object. The spatial data to be filled and plotted.}
-
-\item{transformation}{Character. Transformation to be applied to the fill scale. Default is "identity".}
-
-\item{col.limits}{Numeric vector or NULL. The limits for the color scale. Default is \code{c(0, max(variable))}. Can also be determined by quantiles if \code{quantile.probs} is provided.}
-
-\item{pltly.text}{Character or NULL. Text information to be displayed in tooltips (for interactive plots).}
 
 \item{use.viridis}{Logical. If \code{TRUE}, the \code{viridis} color scale is used. If \code{FALSE}, a custom gradient scale from \code{low.col} to \code{high.col} is used. Default is \code{TRUE}.}
 
@@ -74,6 +73,12 @@ map.ploter(
 \item{quantile.probs}{Numeric vector. Optional quantile probabilities for determining color limits. Overrides \code{col.limits} if provided.}
 
 \item{use.plotly}{Logical. If \code{TRUE}, converts the ggplot object into a plotly interactive plot. Default is \code{FALSE}.}
+
+\item{pltly.text}{Character or NULL. Text information to be displayed in tooltips (for interactive plots).}
+
+\item{transformation}{Character. Transformation to be applied to the fill scale. Default is "identity".}
+
+\item{col.limits}{Numeric vector or NULL. The limits for the color scale. Default is \code{c(0, max(variable))}. Can also be determined by quantiles if \code{quantile.probs} is provided.}
 
 \item{fillground2}{sf object. A secondary spatial data layer for plotting outlines such as surrounding landmass (default is the same as \code{fillground}).}
 
