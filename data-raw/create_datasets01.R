@@ -89,20 +89,20 @@ projections <- list(
 
 # Woodland Trust color palette
 wt_palette <- c(
-  "#000000", # black
-  "#FFFFFF", # white
-  "#8F8AFB", # bluebells
-  "#2B2B2A", # mud
-  "#0D7D67", # english oak
-  "#7DD5D5", # dune slack
-  "#38B0C5", # afon
-  "#FF7A08", # highland cow
-  "#FF9DC9", # ragged robin
-  "#1DBB66", # ash
-  "#A3CB3A", # shamrock
-  "#FFCB05", # common gorse
-  "#891C23", # cairngorms
-  "#2F3061"  # spiked speedwell
+  "#000000", # 1 black
+  "#FFFFFF", # 2 white
+  "#8F8AFB", # 3 bluebells
+  "#2B2B2A", # 4 mud
+  "#0D7D67", # 5 english oak
+  "#7DD5D5", # 6 dune slack
+  "#38B0C5", # 7 afon
+  "#FF7A08", # 8 highland cow
+  "#FF9DC9", # 9 ragged robin
+  "#1DBB66", # 10 ash
+  "#A3CB3A", # 11 shamrock
+  "#FFCB05", # 12 common gorse
+  "#891C23", # 13 cairngorms
+  "#2F3061"  # 14 spiked speedwell
 )
 
 # Save datasets
