@@ -590,13 +590,41 @@ map.ploter <- function(
 
   # Fill scale
   if (categorical) {
-    map <- map + scale_fill_manual(values = colours, name = fill.scale.title)
+
+    # --- auto-generate colours if none provided ---
+    if (is.null(colours)) {
+
+      levs <- unique(fillground[[to.plot]])
+      levs <- levs[!is.na(levs)]
+
+      # use viridis discrete palette
+      colours <- setNames(
+        viridis::viridis(length(levs)),
+        levs
+      )
+    }
+
+    map <- map +
+      scale_fill_manual(values = colours, name = fill.scale.title,
+                        drop = FALSE   # 👈 keeps empty factor levels in legend
+                        )
   } else {
     map <- map + scale_fill_viridis_c(
       limits = col.limits,
       breaks = clr.breaks,
       labels = clr.labels,
-      name = fill.scale.title
+      name = fill.scale.title,
+
+      oob = scales::squish,
+      guide = guide_colorbar(
+        direction = "horizontal",
+        barheight = unit(2,"mm"),
+        barwidth = unit(50,"mm"),
+        draw.ulim = FALSE,
+        title.position = "top",
+        title.hjust = 0.5,
+        label.hjust = 0.5
+      )
     )
   }
 
