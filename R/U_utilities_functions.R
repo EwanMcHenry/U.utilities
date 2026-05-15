@@ -1099,58 +1099,51 @@ combine_sf_batches <- function(sf_list, batch_size = 1000) {
 }
 
 
-# load_lcm_year ----------
-#' Load LCM rasters using terra
+# load_lcm ----------
+#' Load LCM data as terra SpatRasters
 #'
-#' Loads GB and NI LCM rasters for a specified year using terra,
-#' standardises sea values, and returns a structured list.
+#' Loads GB and NI LCM rasters for selected years and resolution,
+#' returning SpatRaster time stacks.
 #'
-#' @param year Numeric or character. Year to extract.
-#' @param lcm.directs Data frame containing:
-#'   - year
-#'   - gb.25 (GB raster sources)
-#'   - ni.25 (NI raster sources)
+#' @param lcm.directs A data frame containing file paths and year metadata
+#' @param years Vector of years to include
+#' @param resolution Character. One of "10", "20", "25"
 #'
 #' @return A list with:
 #' \describe{
-#'   \item{gb}{SpatRaster for Great Britain}
-#'   \item{ni}{SpatRaster for Northern Ireland}
+#'   \item{gb}{SpatRaster (years as layers)}
+#'   \item{ni}{SpatRaster (years as layers)}
 #' }
 #'
 #' @import terra
 #' @export
-#'
-#' @examples
-#' \dontrun{
-#' lcm <- load_lcm_year_terra(2015, lcm.directs)
-#' }
-load_lcm_year <- function(year, lcm.directs) {
+load_lcm <- function(lcm.directs, years, resolution = "25") {
 
-  # index lookup (fast + safe)
+  gb_col <- paste0("gb.", resolution)
+  ni_col <- paste0("ni.", resolution)
 
-  idx <- which(lcm.directs$year == year)
+  gb_files <- setNames(lcm.directs[[gb_col]], lcm.directs$year)
+  ni_files <- setNames(lcm.directs[[ni_col]], lcm.directs$year)
 
-  if (length(idx) == 0) {
-    stop("Year not found in lcm.directs: ", year)
-  }
+  years_chr <- as.character(years)
 
-  # ------------------------------------------------------------
-  # load rasters as terra objects
-  # ------------------------------------------------------------
+  gb <- setNames(
+    lapply(years_chr, function(y) {
+      terra::rast(gb_files[[y]])[[1]]
+    }),
+    years_chr
+  )
 
-  gb <- terra::rast(lcm.directs$gb.25[idx])
-  ni <- terra::rast(lcm.directs$ni.25[idx])
+  ni <- setNames(
+    lapply(years_chr, function(y) {
+      terra::rast(ni_files[[y]])[[1]]
+    }),
+    years_chr
+  )
 
-  # ------------------------------------------------------------
-  # standardise LCM coding (sea = 0 → 13)
-  # ------------------------------------------------------------
-
-  gb[gb == 0] <- 13
-  ni[ni == 0] <- 13
-
-  # ------------------------------------------------------------
-  # return structured object
-  # ------------------------------------------------------------
+  # standardise values
+  gb <- lapply(gb, function(x) { x[x == 0] <- 13; x })
+  ni <- lapply(ni, function(x) { x[x == 0] <- 13; x })
 
   list(
     gb = gb,
