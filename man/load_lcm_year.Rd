@@ -2,37 +2,33 @@
 % Please edit documentation in R/U_utilities_functions.R
 \name{load_lcm_year}
 \alias{load_lcm_year}
-\title{Load LCM rasters for a given year}
+\title{Load LCM rasters using terra}
 \usage{
-load_lcm_year(year, lcm.directs, resolution = "25")
+load_lcm_year(year, lcm.directs)
 }
 \arguments{
 \item{year}{Numeric or character. Year to extract.}
 
-\item{lcm.directs}{A data frame or list containing:
+\item{lcm.directs}{Data frame containing:
 \itemize{
 \item year
 \item gb.25 (GB raster sources)
 \item ni.25 (NI raster sources)
 }}
-
-\item{resolution}{Character. Currently unused but reserved for future
-multi-resolution support (e.g. "25", "50").}
 }
 \value{
-A named list with:
+A list with:
 \describe{
-\item{gb}{RasterLayer for Great Britain}
-\item{ni}{RasterLayer for Northern Ireland}
+\item{gb}{SpatRaster for Great Britain}
+\item{ni}{SpatRaster for Northern Ireland}
 }
 }
 \description{
-Extracts GB and NI LCM rasters for a specified year from a
-pre-defined LCM directory object, and standardises sea values.
+Loads GB and NI LCM rasters for a specified year using terra,
+standardises sea values, and returns a structured list.
 }
 \examples{
 \dontrun{
-lcm <- load_lcm_year(2015, lcm.directs)
-plot(lcm$gb)
+lcm <- load_lcm_year_terra(2015, lcm.directs)
 }
 }

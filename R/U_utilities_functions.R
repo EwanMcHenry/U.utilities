@@ -1100,41 +1100,33 @@ combine_sf_batches <- function(sf_list, batch_size = 1000) {
 
 
 # load_lcm_year ----------
-#' Load LCM rasters for a given year
+#' Load LCM rasters using terra
 #'
-#' Extracts GB and NI LCM rasters for a specified year from a
-#' pre-defined LCM directory object, and standardises sea values.
+#' Loads GB and NI LCM rasters for a specified year using terra,
+#' standardises sea values, and returns a structured list.
 #'
 #' @param year Numeric or character. Year to extract.
-#' @param lcm.directs A data frame or list containing:
+#' @param lcm.directs Data frame containing:
 #'   - year
 #'   - gb.25 (GB raster sources)
 #'   - ni.25 (NI raster sources)
 #'
-#' @param resolution Character. Currently unused but reserved for future
-#'   multi-resolution support (e.g. "25", "50").
-#'
-#' @return A named list with:
+#' @return A list with:
 #' \describe{
-#'   \item{gb}{RasterLayer for Great Britain}
-#'   \item{ni}{RasterLayer for Northern Ireland}
+#'   \item{gb}{SpatRaster for Great Britain}
+#'   \item{ni}{SpatRaster for Northern Ireland}
 #' }
 #'
-#' @import raster
+#' @import terra
 #' @export
 #'
 #' @examples
 #' \dontrun{
-#' lcm <- load_lcm_year(2015, lcm.directs)
-#' plot(lcm$gb)
+#' lcm <- load_lcm_year_terra(2015, lcm.directs)
 #' }
-load_lcm_year <- function(year, lcm.directs, resolution = "25") {
+load_lcm_year <- function(year, lcm.directs) {
 
-  # Check inputs
-
-  if (is.null(lcm.directs$year)) {
-    stop("lcm.directs must contain a 'year' column")
-  }
+  # index lookup (fast + safe)
 
   idx <- which(lcm.directs$year == year)
 
@@ -1142,17 +1134,23 @@ load_lcm_year <- function(year, lcm.directs, resolution = "25") {
     stop("Year not found in lcm.directs: ", year)
   }
 
-  # Load rasters
+  # ------------------------------------------------------------
+  # load rasters as terra objects
+  # ------------------------------------------------------------
 
-  gb <- raster::raster(lcm.directs$gb.25[idx])
-  ni <- raster::raster(lcm.directs$ni.25[idx])
+  gb <- terra::rast(lcm.directs$gb.25[idx])
+  ni <- terra::rast(lcm.directs$ni.25[idx])
 
-  # Standardise sea class (0 -> 13)
+  # ------------------------------------------------------------
+  # standardise LCM coding (sea = 0 → 13)
+  # ------------------------------------------------------------
 
   gb[gb == 0] <- 13
   ni[ni == 0] <- 13
 
-  # Return structured object
+  # ------------------------------------------------------------
+  # return structured object
+  # ------------------------------------------------------------
 
   list(
     gb = gb,
