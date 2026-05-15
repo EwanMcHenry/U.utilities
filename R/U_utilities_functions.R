@@ -1098,3 +1098,64 @@ combine_sf_batches <- function(sf_list, batch_size = 1000) {
   return(batch_list)
 }
 
+
+# load_lcm_year ----------
+#' Load LCM rasters for a given year
+#'
+#' Extracts GB and NI LCM rasters for a specified year from a
+#' pre-defined LCM directory object, and standardises sea values.
+#'
+#' @param year Numeric or character. Year to extract.
+#' @param lcm.directs A data frame or list containing:
+#'   - year
+#'   - gb.25 (GB raster sources)
+#'   - ni.25 (NI raster sources)
+#'
+#' @param resolution Character. Currently unused but reserved for future
+#'   multi-resolution support (e.g. "25", "50").
+#'
+#' @return A named list with:
+#' \describe{
+#'   \item{gb}{RasterLayer for Great Britain}
+#'   \item{ni}{RasterLayer for Northern Ireland}
+#' }
+#'
+#' @import raster
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' lcm <- load_lcm_year(2015, lcm.directs)
+#' plot(lcm$gb)
+#' }
+load_lcm_year <- function(year, lcm.directs, resolution = "25") {
+
+  # Check inputs
+
+  if (is.null(lcm.directs$year)) {
+    stop("lcm.directs must contain a 'year' column")
+  }
+
+  idx <- which(lcm.directs$year == year)
+
+  if (length(idx) == 0) {
+    stop("Year not found in lcm.directs: ", year)
+  }
+
+  # Load rasters
+
+  gb <- raster::raster(lcm.directs$gb.25[idx])
+  ni <- raster::raster(lcm.directs$ni.25[idx])
+
+  # Standardise sea class (0 -> 13)
+
+  gb[gb == 0] <- 13
+  ni[ni == 0] <- 13
+
+  # Return structured object
+
+  list(
+    gb = gb,
+    ni = ni
+  )
+}
