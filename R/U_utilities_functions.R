@@ -1150,3 +1150,67 @@ load_lcm <- function(lcm.directs, years, resolution = "25") {
     ni = ni
   )
 }
+
+# mask_lcm_landscape -----
+#' Mask LCM rasters to a landscape boundary
+#'
+#' Crops and masks a list of LCM SpatRaster objects to a given landscape boundary,
+#' automatically handling GB/NI CRS differences.
+#'
+#' @param lcm A named list containing LCM rasters:
+#'   - lcm$gb for Great Britain rasters
+#'   - lcm$ni for Northern Ireland rasters
+#'   Each element should itself be a named list of SpatRaster objects by year.
+#'
+#' @param landscape An sf polygon representing the study area.
+#'
+#' @param country Character string. Either "Great Britain" or "Northern Ireland".
+#'   Determines which CRS and raster set to use.
+#'
+#' @return A named list of SpatRaster objects cropped and masked to the landscape,
+#'   with the same structure as the input (years preserved).
+#'
+#' @import sf
+#' @import terra
+#' @export
+mask_lcm_landscape <- function(lcm, landscape, country) {
+
+  # select regional dataset
+
+  lcm.r <- if (country == "Northern Ireland") {
+    lcm$ni
+  } else {
+    lcm$gb
+  }
+
+  # set CRS per region
+
+  crs_use <- if (country == "Northern Ireland") {
+    29903
+  } else {
+    27700
+  }
+
+  # convert landscape once to SpatVector
+
+  ts.vect <- terra::vect(sf::st_transform(landscape, crs_use))
+
+  # create raster template (reduces crop extent per year)
+
+  template <- terra::crop(terra::rast(lcm.r[[1]]), ts.vect)
+
+  # fast crop + mask function
+
+  crop_mask_fun <- function(r) {
+    terra::mask(
+      terra::crop(r, template),
+      ts.vect
+    )
+  }
+
+  # apply across all years
+
+  out <- lapply(lcm.r, crop_mask_fun)
+
+  return(out)
+}
