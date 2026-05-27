@@ -1151,20 +1151,29 @@ load_lcm <- function(lcm.directs, years, resolution = "25") {
   )
 }
 
-load_lcm_year <- function(lcm.directs, year, resolution = "25") {
+load_lcm_year <- function(
+    lcm.directs,
+    year,
+    country,
+    resolution = "25"
+) {
 
-  gb_col <- paste0("gb.", resolution)
-  ni_col <- paste0("ni.", resolution)
+  col_use <- if (country == "Northern Ireland") {
+    paste0("ni.", resolution)
+  } else {
+    paste0("gb.", resolution)
+  }
 
-  gb_file <- lcm.directs[[gb_col]][lcm.directs$year == year]
-  ni_file <- lcm.directs[[ni_col]][lcm.directs$year == year]
+  file <- lcm.directs[[col_use]][
+    lcm.directs$year == year
+  ]
 
-  list(
-    gb = terra::rast(gb_file)[[1]],
-    ni = terra::rast(ni_file)[[1]]
-  )
+  r <- terra::rast(file)[[1]]
+
+  r[r == 0] <- 13
+
+  r
 }
-
 # mask_lcm_landscape -----
 #' Mask LCM rasters to a landscape boundary
 #'
@@ -1187,17 +1196,11 @@ load_lcm_year <- function(lcm.directs, year, resolution = "25") {
 #' @import sf
 #' @import terra
 #' @export
-mask_lcm_landscape <- function(lcm, landscape, country) {
-
-  # select regional dataset
-
-  lcm.r <- if (country == "Northern Ireland") {
-    lcm$ni
-  } else {
-    lcm$gb
-  }
-
-  # set CRS per region
+mask_lcm_landscape_year <- function(
+    lcm,
+    landscape,
+    country
+) {
 
   crs_use <- if (country == "Northern Ireland") {
     29903
@@ -1205,56 +1208,15 @@ mask_lcm_landscape <- function(lcm, landscape, country) {
     27700
   }
 
-  # convert landscape once to SpatVector
+  vect <- terra::vect(
+    sf::st_transform(landscape, crs_use)
+  )
 
-  ts.vect <- terra::vect(sf::st_transform(landscape, crs_use))
+  r <- terra::crop(r, vect)
 
-  # create raster template (reduces crop extent per year)
+  r <- terra::mask(r, vect)
 
-  template <- terra::crop(terra::rast(lcm.r[[1]]), ts.vect)
-
-  # fast crop + mask function
-
-  crop_mask_fun <- function(r) {
-    terra::mask(
-      terra::crop(r, template),
-      ts.vect
-    )
-  }
-
-  # apply across all years
-
-  out <- lapply(lcm.r, crop_mask_fun)
-
-  return(out)
+  r
 }
 
-process_lcm_landscape <- function(lcm.directs, years, landscape, country, resolution = "25") {
 
-  crs_use <- if (country == "Northern Ireland") 29903 else 27700
-
-  ts.vect <- terra::vect(sf::st_transform(landscape, crs_use))
-
-  gb_col <- paste0("gb.", resolution)
-  ni_col <- paste0("ni.", resolution)
-
-  out <- lapply(years, function(y) {
-
-    file <- if (country == "Northern Ireland") {
-      lcm.directs[[ni_col]][lcm.directs$year == y]
-    } else {
-      lcm.directs[[gb_col]][lcm.directs$year == y]
-    }
-
-    r <- terra::rast(file)[[1]]
-
-    r[r == 0] <- 13
-
-    r <- terra::crop(r, ts.vect)
-    r <- terra::mask(r, ts.vect)
-
-    r
-  })
-
-  setNames(out, years)
-}
