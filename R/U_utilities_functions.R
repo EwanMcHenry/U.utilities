@@ -1212,7 +1212,7 @@ mask_lcm_landscape_year <- function(
     sf::st_transform(landscape, crs_use)
   )
 
-  r <- terra::crop(r, vect)
+  r <- terra::crop(lcm, vect)
 
   r <- terra::mask(r, vect)
 
