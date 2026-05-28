@@ -1170,8 +1170,6 @@ load_lcm_year <- function(
 
   r <- terra::rast(file)[[1]]
 
-  r[r == 0] <- 13
-
   r
 }
 # mask_lcm_landscape -----
@@ -1215,6 +1213,8 @@ mask_lcm_landscape_year <- function(
   r <- terra::crop(lcm, vect)
 
   r <- terra::mask(r, vect)
+
+  r[r == 0] <- 13 # change 0 to sea
 
   r
 }
