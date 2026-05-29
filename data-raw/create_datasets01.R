@@ -13,9 +13,9 @@ lcm.years <- c(1990, 2000, 2007, 2015, 2017:2024)
 raster.res <- c(rep(NA,4), rep(20, 3), rep(10, 5))
 lcm.directs <- list( year = lcm.years,
                      gb.25 = paste0(gis.wd, "\\Data\\LCM\\LCM", lcm.years, "\\25m land parcel\\gblcm", lcm.years, "_25m.tif"),
-                     gb.raster = paste0(gis.wd, "\\Data\\LCM\\LCM", lcm.years, "\\", raster.res, "m raster\\gblcm2024_", raster.res, "m.tif"),
+                     gb.raster = paste0(gis.wd, "\\Data\\LCM\\LCM", lcm.years, "\\", raster.res, "m raster\\gblcm_", lcm.years, "_", raster.res, "m.tif"),
                      ni.25 = paste0(gis.wd, "\\Data\\LCM\\LCM", lcm.years, "\\25m land parcel\\nilcm", lcm.years, "_25m.tif"),
-                     ni.raster = paste0(gis.wd, "\\Data\\LCM\\LCM", lcm.years, "\\", raster.res, "m raster\\nilcm2024_", raster.res, "m.tif")
+                     ni.raster = paste0(gis.wd, "\\Data\\LCM\\LCM", lcm.years, "\\", raster.res, "m raster\\nilcm_", lcm.years, "_", raster.res, "m.tif")
 )
 
 
