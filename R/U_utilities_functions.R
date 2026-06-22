@@ -1119,8 +1119,14 @@ combine_sf_batches <- function(sf_list, batch_size = 1000) {
 #' @export
 load_lcm <- function(lcm.directs, years, resolution = "25") {
 
-  gb_col <- paste0("gb.", resolution)
-  ni_col <- paste0("ni.", resolution)
+
+  if(resolution ==  "25"){
+    gb_col <- paste0("gb.", resolution)
+    ni_col <- paste0("ni.", resolution)
+  } else{
+    gb_col <- "gb.raster"
+    ni_col <- "ni.raster"
+    }
 
   gb_files <- setNames(lcm.directs[[gb_col]], lcm.directs$year)
   ni_files <- setNames(lcm.directs[[ni_col]], lcm.directs$year)
@@ -1158,11 +1164,18 @@ load_lcm_year <- function(
     resolution = "25"
 ) {
 
-  col_use <- if (country == "Northern Ireland") {
-    paste0("ni.", resolution)
-  } else {
-    paste0("gb.", resolution)
+  if(resolution ==  "25"){
+    col_use <- if (country == "Northern Ireland") {
+      paste0("ni.", resolution)
+      } else {
+        paste0("gb.", resolution)
+    }} else{
+    col_use <- if (country == "Northern Ireland") {
+      "ni.raster"    } else {
+        "gb.raster"    }
   }
+
+
 
   file <- lcm.directs[[col_use]][
     lcm.directs$year == year
